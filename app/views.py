@@ -1,10 +1,10 @@
 from flask import render_template, request, redirect
 from flask import Flask
 from app import app
-from .forms import SearchForm
-import requests
-import json
-import codecs
+#from .forms import SearchForm
+#import requests
+#import json
+#import codecs
 
 #Routes Index Page
 @app.route('/')
