@@ -9,9 +9,12 @@
 -- Member
 -- Share
 
+
 create table if not exists content (
 	cid int(10) unsigned not null auto_increment,
 	date timestamp default current_timestamp,
+	file_path varchar(255) default null,
+	name varchar(255) not null,
 	is_pub boolean default false, -- default? not null?
 	primary key(cid)
 );
