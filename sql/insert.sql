@@ -27,10 +27,10 @@ insert into member values
 ('AA', 'besties', 'GG'),
 ('AA', 'besties', 'HH');
 
-insert into content(cid, name) values
-(1, 'Whiskers'),
-(2, 'My birthday party'),
-(3, 'Rover');
+insert into content(cid, name, is_pub) values
+(1, 'Whiskers', false),
+(2, 'My birthday party', false),
+(3, 'Rover', false);
 
 insert into post(cid, uname) values
 (1, 'AA'),
