@@ -8,6 +8,11 @@
 <div class="jumbotron text-center">
     <h1>Welcome to PriCoSha!</h1>
     <h2>The Newest Technology in Private Sharing!</h2>
+    {% if user %}
+    <h1>Welcome {{user}}</h1>
+    {% else %}
+    <a href="/login"><h1>Login</a> <a href="/register">Register</h1></a>
+    {% endif %}
 </div>
 </div>
 {% endblock %}
