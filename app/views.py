@@ -114,4 +114,23 @@ def logout():
     session.pop('username')
     return redirect('/')
 
+#Needs to be edited
+'''
+@app.route('/post', methods=['GET', 'POST'])
+def post():
+    username = session['username']
+    cursor = conn.cursor();
+    blog = request.form['blog']
+    query1 = 'INSERT INTO post (uname) VALUES(%s)'
+    cursor.execute(query, (username))
+    conn.commit()
+    query2 = 'SELECT max(cid) FROM post'
+    cursor.execute(query)
+    cid = cursor.fetchone
+    query3 = 'INSERT INTO content (blog_post, username) VALUES(%s, %s)'
+    cursor.execute(query, (blog, username))
+    conn.commit()
+    cursor.close()
+    return redirect(url_for('home'))
+'''
 
