@@ -10,6 +10,17 @@
 	{% endif %}
 {% endblock %}
 
+{% block styles %}
+  {{ super() }}
+  <style>
+  .well {
+    padding-top: 0px;
+  }
+  </style>
+  {% block bstyles %}{% endblock %}
+{% endblock %}
+
+
 {% block navbar %}
 <nav class="navbar navbar-default">
   <div class="container-fluid">
@@ -27,15 +38,17 @@
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
 	<li class="{% if nav_active=='index'%}active{%endif%}"><a href="/index">Home</a></li>
+	<li class="{% if nav_active=='login'%}active{%endif%}"><a href="/login">Login</a></li>
+	<li class="{% if nav_active=='register'%}active{%endif%}"><a href="/register">Register</a></li> 
 	<li class="{% if nav_active=='about'%}active{%endif%}"><a href="/about">About</a></li>
-	<li class="{% if nav_active=='index'%}active{%endif%}"><a href="/login">Login</a></li>
-	<li class="{% if nav_active=='about'%}active{%endif%}"><a href="/register">Register</a></li> 
       </ul>
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
 </nav>
 {% endblock %}
 
-
 {% block content %}
+<div class="container">
+  {% block page_content %}{% endblock %}
+</div>
 {% endblock %}

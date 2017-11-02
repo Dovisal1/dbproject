@@ -1,23 +1,27 @@
-<html>
-    <head>
-        <title>PriCoSha</title>
-    </head>
-    <body style="background-color: #ffe695";>
-        <div>PriCoSha: <a href="/index">Home</a> <a href="/login">Login</a> <a href="/Register">Register</a> <a href="/about">About</a></div></div>
-        <hr>
-        <h1> PriCoSha </h1>
-        <h2>The Newest Technology in Private Sharing!</h2>
-{% block content %}
-<form action="/loginAuth" method="POST">
-    <input style="font-size:16pt;height:35px;width:200px;" type="text" name = "username" placeholder="username" required/> </br>
-    <input style="font-size:16pt;height:35px;width:200px;" type="password" name = "password" placeholder="password" required/></br>
-    <input style="font-size:16pt;height:35px;width:70px;"type="submit" value = Login />
-    {% if error %}
-    <p class="error"><strong>Error:</strong> {{error}}</p>
-    {% endif %}
-</form>
 
-<a href="/">Go back</a>
-</body>
-</html>
+{% extends "base.html" %}
+{% set nav_active = "login" %}
+
+{% block title %}Login{% endblock %}
+
+{% block page_content %}
+<div class="container col-sm-offset-4 col-sm-4">
+
+<div class="well">
+<h3> Login </h3>
+<form action="/loginAuth" method="POST">
+		<label for="username">Username</label>
+    <input class="form-control" id = "username" style="font-size:16pt" type="text" name = "username" placeholder="username" required/> </br />
+  	<label for="password">Password</label>
+    <input class="form-control" id="password" style="font-size:16pt" type="password" name = "password" placeholder="password" required/></br />
+  	<button type="submit" class="btn btn-block btn-primary">Login</button>
+  {% if error %}
+  <div class="alert alert-danger fade in">
+    <strong>Error:</strong> {{error}}
+  </div>
+  {% endif %}
+</form>
+</div>
+
+</div>
 {% endblock %}

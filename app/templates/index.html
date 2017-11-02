@@ -3,8 +3,7 @@
 {% extends "base.html" %}
 {% set nav_active = 'index' %}
 
-{% block content %}
-<div class="container">
+{% block page_content %}
 <div class="jumbotron text-center">
     <h1>Welcome to PriCoSha!</h1>
     <h2>The Newest Technology in Private Sharing!</h2>
@@ -14,6 +13,5 @@
     <a href="/login"><h1>Login</a> <a href="/register">Register</h1></a>
     <!--not sure how to do linking with bootstrap so above needs to be edited-->
     {% endif %}
-</div>
 </div>
 {% endblock %}
