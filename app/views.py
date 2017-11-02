@@ -2,6 +2,7 @@ from flask import render_template, request, redirect, session, url_for
 from flask import Flask
 from app import app
 import pymysql.cursors
+import hashlib
 #from .forms import SearchForm
 #import requests
 #import json
