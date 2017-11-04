@@ -1,20 +1,17 @@
 <!-- extend from base layout -->
 <!-- Website About page -->
-{% extends "base.html" %}
-{% set nav_active = 'about' %}
-
-{% block page_content %}
+{% extends "base.html" %} {% set nav_active = 'about' %} {% set authenticated = isAuthenticated %} {% block page_content %}
 
 <div class="jumbotron">
-<h1>About PriCoSha</h1>
-<br>
-<p>
-This is a application created by Shlomo Oved, Danny Lin, and Dovi Salomon. It uses MySql and Flask to allow for private sharing of digital content.
-</p>
+    <h1>About PriCoSha</h1>
+    <br>
+    <p>
+        This is a application created by Shlomo Oved, Danny Lin, and Dovi Salomon. It uses MySQL and Flask to allow for private sharing of digital content.
+    </p>
 
-<p>
-Github: <b>www.github.com/Dovisal1/dbproject</b>
-</p>
+    <p>
+        <strong>Github</strong>: <a href="http://github.com/Dovisal1/dbproject" target="_blank">http://github.com/Dovisal1/dbproject</a>
+    </p>
 
 </div>
 {% endblock %}
