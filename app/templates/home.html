@@ -8,8 +8,9 @@
 
 <div class="container">
     <h1>Welcome {{info.fname}}</h1>
-    <form action="/post" method="POST">
-        <input style="font-size:16pt;height:35px;width:200px;" type="text" name="blog" placeholder="post" required/> </br>
+    <form action="/post" method="POST" enctype="multipart/form-data">
+        <input type="text" name="blog" placeholder="Caption" required/> </br>
+        <input type="file" name="file" accept="image/*">
         <input type="text" value="{{info.fname}}" hidden="true" />
         <button type="submit" class="btn btn-primary" />Post</button>
     </form>
