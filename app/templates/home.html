@@ -1,32 +1,29 @@
-{% extends "base.html" %} {% set nav_active = "index" %} {% block title %}Home{% endblock %} {% block page_content %}
-<form action="/post" method="POST">
-
-    <h1>Welcome {{info.fname}}</h1>
-    <input style="font-size:16pt;height:35px;width:200px;" type="text" name="blog" placeholder="post" required/> </br>
-    <input style="font-size:16pt;height:35px;width:70px;" type="submit" value=P ost />
-</form>
-
-<style type="text/css">
-    table,
-    th,
-    td {
-        border: 1px solid black;
-        height: 100px;
-        width: 1000px;
-        font-size: 18pt;
+{% extends "base.html" %} {% set nav_active = "index" %} {% set authenticated = True %} {% block title %}Home{% endblock %} {% block page_content %}
+<style>
+    form {
+        padding-top: 20px;
+        padding-bottom: 30px;
     }
 </style>
 
-<table>
-    <th>Time</th>
-    <th>Post</th>
+<div class="container">
+    <h1>Welcome {{info.fname}}</h1>
+    <form action="/post" method="POST">
+        <input style="font-size:16pt;height:35px;width:200px;" type="text" name="blog" placeholder="post" required/> </br>
+        <input type="text" value="{{info.fname}}" hidden="true" />
+        <button type="submit" class="btn btn-primary" />Post</button>
+    </form>
 
-    {% for line in posts %}
-    <tr>
-        <td>{{line.date}}</td>
-        <td>{{line.name}}</td>
-    </tr>
-    {% endfor %}
-</table>
+    <table class="table">
+        <th>Time</th>
+        <th>Post</th>
 
-<a href="/logout">Logout</a> {% endblock %}
+        {% for line in posts %}
+        <tr>
+            <td>{{line.date}}</td>
+            <td>{{line.name}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}
