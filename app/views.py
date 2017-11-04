@@ -15,18 +15,35 @@ conn = pymysql.connect(host=app.config['DBHOST'],
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
 
+def authenticated():
+    return "username" in session
+
+def retrieveData():
+    username = session['username']
+    cursor = conn.cursor();
+    query = 'SELECT date, name FROM content NATURAL JOIN post WHERE uname = %s ORDER BY date DESC'
+    cursor.execute(query, (username))
+    data = cursor.fetchall()
+    query = 'SELECT fname FROM person WHERE uname = %s'
+    cursor.execute(query, (username))
+    data2 = cursor.fetchone()
+    cursor.close()
+    return {"username": username, "posts": data, "info": data2}
+
 #Routes Index Page
 @app.route('/')
 @app.route('/index/')
 def index():
-    return render_template("index.html",
-                           title='Home')
+    if authenticated():
+        data = retrieveData()
+        return render_template('home.html', username=data["username"], posts=data["posts"], info=data["info"])
+    else:
+        return render_template("index.html", title='Home')
 
 #Routes About Page
 @app.route('/about/')
 def about():
-    return render_template("about.html",
-                           title='About')
+    return render_template("about.html", title='About')
 
 #Routes Login Page
 @app.route('/login')
@@ -89,7 +106,6 @@ def registerAuth():
         error = "This user already exists"
         return render_template('register.html', error = error)
     else:
-        print("i am here")
         ins = 'INSERT INTO person (uname, password, fname, lname) VALUES(%s, %s, %s, %s)'
         cursor.execute(ins, (username, hashlib.md5(password.encode('utf-8')).hexdigest(), fname, lname))
         conn.commit()
@@ -99,16 +115,12 @@ def registerAuth():
 #Routes Home Page Once Logged In
 @app.route('/home')
 def home():
-    username = session['username']
-    cursor = conn.cursor();
-    query = 'SELECT date, name FROM content NATURAL JOIN post WHERE uname = %s ORDER BY date DESC'
-    cursor.execute(query, (username))
-    data = cursor.fetchall()
-    query = 'SELECT fname FROM person WHERE uname = %s'
-    cursor.execute(query, (username))
-    data2 = cursor.fetchone()
-    cursor.close()
-    return render_template('home.html', username=username, posts=data, fname=data2)
+    if authenticated():
+        data = retrieveData()
+        return render_template('home.html', username=data["username"], posts=data["posts"], info=data["info"])
+    else:
+        # no active session, redirect to index
+        return render_template("index.html", title = "Home")
 
 #Logging out
 @app.route('/logout')
