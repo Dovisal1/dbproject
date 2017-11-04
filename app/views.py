@@ -73,7 +73,8 @@ def registerAuth():
     #grabs information from the forms
     username = request.form['username']
     password = request.form['password']
-        
+    fname = request.form['fname']
+    lname = request.form['lname']
     #cursor used to send queries
     cursor = conn.cursor()
     #executes query
@@ -88,8 +89,9 @@ def registerAuth():
         error = "This user already exists"
         return render_template('register.html', error = error)
     else:
-        ins = 'INSERT INTO person VALUES(%s, %s)'
-        cursor.execute(ins, (username, hashlib.md5(password.encode('utf-8')).hexdigest()))
+        print("i am here")
+        ins = 'INSERT INTO person (uname, password, fname, lname) VALUES(%s, %s, %s, %s)'
+        cursor.execute(ins, (username, hashlib.md5(password.encode('utf-8')).hexdigest(), fname, lname))
         conn.commit()
         cursor.close()
         return render_template('index.html')

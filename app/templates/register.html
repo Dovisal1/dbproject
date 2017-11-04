@@ -1,28 +1,29 @@
-
-{% extends "base.html" %}
-{% set nav_active = "register" %}
-
-{% block title %}Register{% endblock %}
-
-{% block page_content %}
+ {% extends "base.html" %} {% set nav_active = "register" %} {% block title %}Register{% endblock %} {% block page_content %}
 
 <div class="container col-sm-offset-4 col-sm-4">
 
-<div class="well">
-<h3> Register </h3>
-<form action="/registerAuth" method="POST">
-        <label for="username">Username</label>
-    <input class="form-control" id = "username" style="font-size:16pt" type="text" name = "username" placeholder="username" required/> </br />
-    <label for="password">Password</label>
-    <input class="form-control" id="password" style="font-size:16pt" type="password" name = "password" placeholder="password" required/></br />
-    <button type="submit" class="btn btn-block btn-primary">Register</button>
-  {% if error %}
-  <div class="alert alert-danger fade in">
-    <strong>Error:</strong> {{error}}
-  </div>
-  {% endif %}
-</form>
-</div>
+    <div class="well">
+        <h3> Register </h3>
+        <form action="/registerAuth" method="POST">
+            <label for="username">Username</label>
+            <input class="form-control" id="username" style="font-size:16pt" type="text" name="username" placeholder="Username" required/>
+            </br />
+            <label for="fname">First Name</label>
+            <input class="form-control" id="name" style="font-size:16pt" type="text" name="fname" placeholder="First Name" required/>
+            </br />
+            <label for="lname">Last Name</label>
+            <input class="form-control" id="lname" style="font-size:16pt" type="text" name="lname" placeholder="Last Name" required/>
+            </br />
+            <label for="password">Password</label>
+            <input class="form-control" id="password" style="font-size:16pt" type="password" name="password" placeholder="Password" required/>
+            </br />
+            <button type="submit" class="btn btn-block btn-primary">Register</button> {% if error %}
+            <div class="alert alert-danger fade in">
+                <strong>Error:</strong> {{error}}
+            </div>
+            {% endif %}
+        </form>
+    </div>
 
 </div>
 {% endblock %}
