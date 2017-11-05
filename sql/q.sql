@@ -9,9 +9,3 @@ where member = 'DD';
 
 -- distinct is required, since David may be in more than one group
 -- that a content item is shared with.
-
--- To find all that content that David has permission to view:
-
-select distinct name
-from content natural join share natural join member
-where member = 'DD' or owner = 'DD' or is_pub;
