@@ -8,33 +8,87 @@
 Home
 {% endblock %}
 
-{% block page_content %}
+{% block bstyles %}
 <style>
     form {
         padding-top: 20px;
         padding-bottom: 30px;
     }
 </style>
-
-<div class="container">
-    <h1>Welcome {{info.fname}}</h1>
-    <form action="/post" method="POST" enctype="multipart/form-data">
-        <input type="text" name="blog" placeholder="Caption" required/> </br>
-        <input type="file" name="file" accept="image/*">
-        <input type="text" value="{{info.fname}}" hidden="true" />
-        <button type="submit" class="btn btn-primary" />Post</button>
-    </form>
-
-    <table class="table">
-        <th>Time</th>
-        <th>Post</th>
-
-        {% for line in posts %}
-        <tr>
-            <td>{{line.date}}</td>
-            <td>{{line.name}}</td>
-        </tr>
-        {% endfor %}
-    </table>
-</div>
 {% endblock %}
+
+{% block page_content %}
+
+<div class="panel panel-default">
+	<div class="panel-heading">
+		Post a Photo
+	</div>
+
+	<div class="panel-body">
+		<form class="form-inline" action="/post" method="POST" enctype="multipart/form-data">
+			<div class="form-group">
+				<div class='input-group'>
+					<label class="input-group-btn">
+						<span class="btn btn-primary">
+							Browse&hellip;
+							<input type="file" name="file" accept="image/*" style="display: none;">
+						</span>
+					</label>
+				<input type="text" class="form-control" readonly>
+		    </div>
+			<div class="form-group">
+		    	<input class="form-control" type="text" name="name" placeholder="Caption" required/>
+		    </div>
+		    <div class="form-group">
+		    	<button type="submit" class="btn btn-primary" />
+		    		<span class="glyphicon glyphicon-edit"></span>
+		    		Post
+		    	</button>
+		    </div>
+		</form>
+	</div>
+</div>
+</div>
+
+{% if posts %}
+<div class="well col-sm-offset-1 col-sm-10">
+{% for line in posts %}
+<div class="panel panel-default">
+<div class="panel-heading">
+	{{line.name}}
+	<div class="pull-right">
+		<small class="text-right">{{line.date|time_ago}}</small>
+	</div>
+</div>
+<div class="panel-body">
+</div>
+</div>
+{% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block bscripts %}
+<script>
+$(document).on('change', ':file', function() {
+    var input = $(this),
+        numFiles = input.get(0).files ? input.get(0).files.length : 1,
+        label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+    input.trigger('fileselect', [numFiles, label]);
+});
+
+$(document).ready( function() {
+      $(':file').on('fileselect', function(event, numFiles, label) {
+
+          var input = $(this).parents('.input-group').find(':text'),
+              log = numFiles > 1 ? numFiles + ' files selected' : label;
+
+          if( input.length ) {
+              input.val(log);
+          }
+      });
+});
+</script>
+{% endblock %}
+

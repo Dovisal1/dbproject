@@ -9,7 +9,7 @@
 {% block styles %}
 {{ super() }}
 <style>
-    .well {
+    .form-well {
         padding-top: 0px;
     }
 </style>
@@ -48,10 +48,18 @@
             </div>
             <ul class="nav navbar-nav navbar-right">
                 {% if not authenticated %}
-                <li class="{% if nav_active=='login'%}active{%endif%}"><a href="/login">Login</a></li>
-                <li class="{% if nav_active=='register'%}active{%endif%}"><a href="/register">Register</a></li>
+                <li class="{% if nav_active=='register'%}active{%endif%}">
+                	<a href="/register"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>
+                <li class="{% if nav_active=='login'%}active{%endif%}">
+                	<a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
                 {% else %}
-                <li><a href="/logout">Logout</a></li>
+                <li class="dropdown">
+                	<a class="dropdown-toggle" data-toggle="dropdown" href="#">{{info.fname}}
+                	<span class="caret"></span></a>
+                	<ul class="dropdown-menu">
+                		<li><a href="/logout">Logout</a></li>
+                	</ul>
+                </li>
                 {%endif%}
             </ul>
         </div>
@@ -65,4 +73,9 @@
 <div class="container">
     {% block page_content %}{% endblock %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{% block bscripts %}{% endblock %}
 {% endblock %}

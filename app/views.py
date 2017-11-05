@@ -5,6 +5,8 @@ import pymysql.cursors
 import hashlib
 import os, sys, stat
 from werkzeug.utils import secure_filename
+from datetime import datetime
+from ago import human
 
 conn = pymysql.connect(host=app.config['DBHOST'],
                        user=app.config['DBUSER'],
@@ -79,7 +81,7 @@ def loginAuth():
         return redirect(url_for('home'))
     else:
         #returns an error message to the html page
-        error = 'Invalid login or username'
+        error = 'Invalid username or password.'
         return render_template('login.html', error=error)
 
 #Authenticates the register
@@ -101,14 +103,15 @@ def registerAuth():
     error = None
     if(data):
         #If the previous query returns data, then user exists
-        error = "This user already exists"
+        error = username + " is taken. Try another."
         return render_template('register.html', error = error)
     else:
         ins = 'INSERT INTO person (uname, password, fname, lname) VALUES(%s, %s, %s, %s)'
         cursor.execute(ins, (username, hashlib.md5(password.encode('utf-8')).hexdigest(), fname, lname))
         conn.commit()
         cursor.close()
-        return render_template('index.html')
+        session['username'] = username
+        return redirect(url_for('home'))
 
 #Routes Home Page Once Logged In
 @app.route('/home')
@@ -129,22 +132,18 @@ def logout():
 #Posting
 @app.route('/post', methods=['GET', 'POST'])
 def post():
-    username = session['username']
+    uname = session['username']
     cursor = conn.cursor();
-    blog = request.form['blog']
+    cname = request.form['name']
     photo = request.files['file']
     if photo:
         filename = secure_filename(photo.filename)
-        os.chmod(app.config["PHOTO_DIRECTORY"], 0o777)
+        #os.chmod(app.config["PHOTO_DIRECTORY"], 0o777)
         photo.save(os.path.join(app.config["PHOTO_DIRECTORY"], filename))
-    query = 'INSERT INTO post (uname) VALUES(%s)'
-    cursor.execute(query, (username))
-    conn.commit()
-    query = 'SELECT max(cid) FROM post'
-    cursor.execute(query)
-    cid = cursor.fetchone
-    query = 'INSERT INTO content (blog_post, username) VALUES(%s, %s)'
-    cursor.execute(query, (blog, username))
+    q = 'INSERT INTO content(name, file_path) VALUES(%s, %s)'
+    cursor.execute(q, (cname, filename))
+    q = 'INSERT INTO post(cid, uname) VALUES (%s, %s)'
+    cursor.execute(q, (cursor.lastrowid, uname))
     conn.commit()
     cursor.close()
     return redirect(url_for('home'))
