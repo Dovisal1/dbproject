@@ -1,7 +1,6 @@
 
 -- Project Part 2
--- Group Member:
--- Dov Salomon, Danny Lin, Shlomo Oved
+-- Group Members: Dov Salomon, Danny Lin, Shlomo Oved
 
 -- Part A
 
