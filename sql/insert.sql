@@ -1,6 +1,7 @@
 
+--Part B
 
-insert into person values
+insert into person(uname, password, fname, lname) values
 ('AA', md5('AA'), 'Ann', 'Anderson'),
 ('BB', md5('BB'), 'Bob', 'Baker'),
 ('CC', md5('CC'), 'Cathy', 'Chang'),
@@ -10,12 +11,12 @@ insert into person values
 ('GG', md5('GG'), 'Gina', 'Gupta'),
 ('HH', md5('HH'), 'Helen', 'Harper');
 
-insert  into friendgroup(uname, gname) values
+insert  into friendgroup(owner, gname) values
 ('AA', 'family'),
 ('BB', 'family'),
 ('AA', 'besties');
 
-insert into member values
+insert into member(owner, gname, member) values
 ('AA', 'family', 'AA'),
 ('AA', 'family', 'CC'),
 ('AA', 'family', 'DD'),
@@ -32,12 +33,12 @@ insert into content(cid, name, is_pub) values
 (2, 'My birthday party', false),
 (3, 'Rover', false);
 
-insert into post(cid, uname) values
-(1, 'AA'),
-(2, 'AA'),
-(3, 'BB');
+insert into post(uname, cid) values
+('AA', 1),
+('AA', 2),
+('BB', 3);
 
-insert into share values
+insert into share(cid, owner, gname) values
 (1, 'AA', 'family'),
 (2, 'AA', 'besties'),
 (3, 'BB', 'family');

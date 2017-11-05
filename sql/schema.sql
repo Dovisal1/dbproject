@@ -1,14 +1,27 @@
 
--- Tables:
--- Content
--- Person
--- Post
--- Comment
--- Tag
--- FriendGroup
--- Member
--- Share
+-- Project Part 2
+-- Group Member:
+-- Dov Salomon, Danny Lin, Shlomo Oved
 
+-- Part A
+
+-- Tables:
+-- content(cid, date, file_path, name, is_pub)
+	   ---
+-- person(uname, password, fname, lname)
+	  -----
+-- post(uname, cid)
+        -----  ---
+-- comment(uname, cid, timestamp, text)
+           -----  ---  ---------
+-- tag(tagger, taggee, cid, timestamp, status)
+       ------  ------  ---
+-- friendgroup(owner, gname, description)
+               -----  -----
+-- member(owner, gname, member)
+          -----  -----  ------
+-- share(cid, owner, gname)
+         ---  -----  -----
 
 create table if not exists content (
 	cid int(10) unsigned not null auto_increment,
@@ -58,11 +71,11 @@ create table if not exists tag (
 );
 
 create table if not exists friendgroup (
-	uname varchar(64) not null,
+	owner varchar(64) not null,
 	gname varchar(64) not null,
 	description longtext default null,
-	primary key(uname, gname),
-	foreign key(uname) references person(uname)
+	primary key(owner, gname),
+	foreign key(owner) references person(uname)
 );
 
 create table if not exists member (
@@ -70,8 +83,9 @@ create table if not exists member (
 	gname varchar(64) not null,
 	member varchar(64) not null,
 	primary key(owner, gname, member),
-	foreign key(owner, gname) references friendgroup(uname, gname),
+	foreign key(owner, gname) references friendgroup(owner, gname),
 	foreign key(member) references person(uname)
+	-- no need for FK on owner, its already contrained by friendgroup FK
 );
 
 create table if not exists share (
@@ -80,8 +94,5 @@ create table if not exists share (
 	gname varchar(64) not null,
 	primary key(cid, owner, gname),
 	foreign key(cid) references content(cid),
-	foreign key(owner, gname) references friendgroup(uname, gname)
+	foreign key(owner, gname) references friendgroup(owner, gname)
 );
-
-
-
