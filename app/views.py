@@ -1,12 +1,14 @@
+
 from flask import render_template, request, redirect, session, url_for
+from flask import send_from_directory, abort
 from flask import Flask
+
 from app import app
+
 import pymysql.cursors
 import hashlib
 import os, sys, stat
 from werkzeug.utils import secure_filename
-from datetime import datetime
-from ago import human
 
 conn = pymysql.connect(host=app.config['DBHOST'],
                        user=app.config['DBUSER'],
@@ -21,7 +23,7 @@ def authenticated():
 def retrieveData():
     username = session['username']
     cursor = conn.cursor();
-    query = 'SELECT date, name FROM content NATURAL JOIN post WHERE uname = %s ORDER BY date DESC'
+    query = 'SELECT date, name, file_path FROM content NATURAL JOIN post WHERE uname = %s ORDER BY date DESC'
     cursor.execute(query, (username))
     data = cursor.fetchall()
     query = 'SELECT fname FROM person WHERE uname = %s'
@@ -148,9 +150,24 @@ def post():
     cursor.close()
     return redirect(url_for('home'))
 
-#Posting
+# Retrieve user photos only if logged in
+@app.route('/content/<path:filename>')
+def retrieve_file(filename):
+    if not authenticated():
+        abort(404)
+    else:
+        uname = session['username']
+        cursor = conn.cursor()
+        q = "SELECT file_path FROM content NATURAL JOIN post WHERE uname = %s AND file_path = %s"
+        cursor.execute(q, (uname, filename))
+        res = cursor.fetchone()
+        if res:
+            return send_from_directory(app.config['PHOTO_DIRECTORY'], filename)
+        else:
+            abort(404)
 
 
+#Searching
 @app.route('/search', methods=['GET', 'POST'])
 def search():
     username = session['username']

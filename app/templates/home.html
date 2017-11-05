@@ -4,6 +4,10 @@
 {% set nav_active = 'home' %}
 {% set authenticated = True %}
 
+{% block head %}
+{{ super() }}
+{% endblock %}
+
 {% block btitle %}
 Home
 {% endblock %}
@@ -57,10 +61,11 @@ Home
 <div class="panel-heading">
 	{{line.name}}
 	<div class="pull-right">
-		<small class="text-right">{{line.date|time_ago}}</small>
+		<small>{{line.date|time_ago}}</small>
 	</div>
 </div>
 <div class="panel-body">
+	<img src="/content/{{line.file_path}}" class="img-responsive img-rounded">
 </div>
 </div>
 {% endfor %}
