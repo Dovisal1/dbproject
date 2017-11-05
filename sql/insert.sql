@@ -28,15 +28,10 @@ insert into member(owner, gname, member) values
 ('AA', 'besties', 'GG'),
 ('AA', 'besties', 'HH');
 
-insert into content(cid, name, is_pub) values
-(1, 'Whiskers', false),
-(2, 'My birthday party', false),
-(3, 'Rover', false);
-
-insert into post(uname, cid) values
-('AA', 1),
-('AA', 2),
-('BB', 3);
+insert into content(cid, uname, name, is_pub) values
+(1, 'AA', 'Whiskers', false),
+(2, 'AA', 'My birthday party', false),
+(3, 'BB', 'Rover', false);
 
 insert into share(cid, owner, gname) values
 (1, 'AA', 'family'),

@@ -5,12 +5,10 @@
 -- Part A
 
 -- Tables:
--- content(cid, date, file_path, name, is_pub)
-	   ---
 -- person(uname, password, fname, lname)
 	  -----
--- post(uname, cid)
-        -----  ---
+-- content(cid, uname, date, file_path, name, is_pub)
+	   ---
 -- comment(uname, cid, timestamp, text)
            -----  ---  ---------
 -- tag(tagger, taggee, cid, timestamp, status)
@@ -22,15 +20,6 @@
 -- share(cid, owner, gname)
          ---  -----  -----
 
-create table if not exists content (
-	cid int(10) unsigned not null auto_increment,
-	date timestamp default current_timestamp,
-	file_path varchar(255) default null,
-	name varchar(255) not null,
-	is_pub boolean default false,
-	primary key(cid)
-);
-
 create table if not exists person (
 	uname varchar(64) not null,
 	password varchar(255) not null,
@@ -39,12 +28,15 @@ create table if not exists person (
 	primary key(uname)
 );
 
-create table if not exists post (
+create table if not exists content (
+	cid int(10) unsigned not null auto_increment,
 	uname varchar(64) not null,
-	cid int(10) unsigned not null,
-	primary key(uname, cid),
-	foreign key(uname) references person(uname),
-	foreign key(cid) references content(cid)
+	date timestamp default current_timestamp,
+	file_path varchar(255) default null,
+	name varchar(255) not null,
+	is_pub boolean default false,
+	primary key(cid),
+	foreign key(uname) references person(uname)
 );
 
 create table if not exists comment (
