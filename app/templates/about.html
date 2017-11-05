@@ -1,6 +1,15 @@
 <!-- extend from base layout -->
 <!-- Website About page -->
-{% extends "base.html" %} {% set nav_active = 'about' %} {% set authenticated = isAuthenticated %} {% block page_content %}
+{% extends "base.html" %}
+
+{% set nav_active = 'about' %}
+{% set authenticated = isAuthenticated %}
+
+{% block btitle %}
+About
+{% endblock %}
+
+{% block page_content %}
 
 <div class="jumbotron">
     <h1>About PriCoSha</h1>
@@ -14,4 +23,5 @@
     </p>
 
 </div>
+
 {% endblock %}

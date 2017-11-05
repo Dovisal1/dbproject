@@ -2,26 +2,29 @@
 {% extends "base.html" %}
 {% set nav_active = "login" %}
 
-{% block title %}Login{% endblock %}
+{% block btitle %}
+Login
+{% endblock %}
 
 {% block page_content %}
 <div class="container col-sm-offset-4 col-sm-4">
 
 <div class="well">
-<h3> Login </h3>
+<h3 class="text-center"> Login </h3>
 <form action="/loginAuth" method="POST">
 		<label for="username">Username</label>
     <input class="form-control" id = "username" style="font-size:16pt" type="text" name = "username" placeholder="username" required/> </br />
   	<label for="password">Password</label>
     <input class="form-control" id="password" style="font-size:16pt" type="password" name = "password" placeholder="password" required/></br />
   	<button type="submit" class="btn btn-block btn-primary">Login</button>
-  {% if error %}
-  <div class="alert alert-danger fade in">
-    <strong>Error:</strong> {{error}}
-  </div>
-  {% endif %}
 </form>
 </div>
+{% if error %}
+  <div class="alert alert-danger fade in">
+    <a href='#' class="close" data-dismiss="alert" aria-label="close">&times;</a>
+    <strong>Error:</strong> {{error}}
+  </div>
+{% endif %}
 
 </div>
 {% endblock %}

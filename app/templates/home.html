@@ -1,4 +1,14 @@
-{% extends "base.html" %} {% set nav_active = "index" %} {% set authenticated = True %} {% block title %}Home{% endblock %} {% block page_content %}
+
+{% extends "base.html" %}
+
+{% set nav_active = 'home' %}
+{% set authenticated = True %}
+
+{% block btitle %}
+Home
+{% endblock %}
+
+{% block page_content %}
 <style>
     form {
         padding-top: 20px;

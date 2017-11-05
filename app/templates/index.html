@@ -3,12 +3,16 @@
 {% extends "base.html" %}
 {% set nav_active = 'index' %}
 
+{% block btitle %}
+	PriCoSha
+{% endblock %}
+
 {% block page_content %}
 <div class="jumbotron text-center">
     <h1>Welcome to PriCoSha!</h1>
     <h2>The Newest Technology in Private Sharing!</h2>
-    {% if user %}
-    <h1>Welcome {{user}}</h1>
+    {% if authenticated %}
+    <h1>Welcome {{username}}</h1>
     {% else %}
     <a href="/login"><h1>Login</a> <a href="/register">Register</h1></a>
     <!--not sure how to do linking with bootstrap so above needs to be edited-->
