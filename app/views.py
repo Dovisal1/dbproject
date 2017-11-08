@@ -98,6 +98,10 @@ def registerAuth():
     #grabs information from the forms
     username = request.form['username']
     password = request.form['password']
+    passconf = request.form['pass-conf']
+    if password != passconf:
+        error = "Passwords do not match."
+        return render_template('register.html', error=error)
     fname = request.form['fname']
     lname = request.form['lname']
     #cursor used to send queries
