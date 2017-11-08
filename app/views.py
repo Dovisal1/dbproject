@@ -124,7 +124,7 @@ def registerAuth():
 def retrieveData():
     username = session['username']
     cursor = conn.cursor();
-    query = 'SELECT date, name, file_path FROM content NATURAL JOIN post WHERE uname = %s ORDER BY date DESC'
+    query = 'SELECT date, name, file_path FROM content WHERE uname = %s ORDER BY date DESC'
     cursor.execute(query, (username))
     data = cursor.fetchall()
     query = 'SELECT fname FROM person WHERE uname = %s'
@@ -151,7 +151,7 @@ def feed():
           WHERE member = %s)\
           UNION\
           (SELECT date, name, file_path\
-          FROM content NATURAL JOIN post\
+          FROM content \
           WHERE is_pub or uname = %s)\
           ORDER BY date desc'
     cursor.execute(q, (uname, uname))
@@ -179,13 +179,11 @@ def post():
         filename = secure_filename(photo.filename)
         #os.chmod(app.config["PHOTO_DIRECTORY"], 0o777)
         photo.save(os.path.join(app.config["PHOTO_DIRECTORY"], filename))
-        q = 'INSERT INTO content(name, file_path) VALUES(%s, %s)'
-        cursor.execute(q, (cname, filename))
+        q = 'INSERT INTO content(name, file_path, uname) VALUES(%s, %s, %s)'
+        cursor.execute(q, (cname, filename, uname))
     else:
-        q = 'INSERT INTO content(name) VALUES (%s)'
-        cursor.execute(q, (cname))
-    q = 'INSERT INTO post(cid, uname) VALUES (%s, %s)'
-    cursor.execute(q, (cursor.lastrowid, uname))
+        q = 'INSERT INTO content(name, uname) VALUES (%s, %s)'
+        cursor.execute(q, (cname, uname))
     conn.commit()
     cursor.close()
     return redirect(url_for('home'))
@@ -197,7 +195,7 @@ def retrieve_file(filename):
         abort(404)
     uname = session['username']
     cursor = conn.cursor()
-    q = "SELECT file_path FROM content NATURAL JOIN post WHERE uname = %s AND file_path = %s"
+    q = "SELECT file_path FROM content WHERE uname = %s AND file_path = %s"
     cursor.execute(q, (uname, filename))
     res = cursor.fetchone()
     if res:
@@ -212,7 +210,7 @@ def search():
     username = session['username']
     cursor = conn.cursor()
     searchQuery = request.form['query']
-    query = 'SELECT date, name FROM content NATURAL JOIN post WHERE uname = %s AND name LIKE "\%%s" ORDER BY date DESC'
+    query = 'SELECT date, name FROM content WHERE uname = %s AND name LIKE "\%%s" ORDER BY date DESC'
     cursor.execute(query, (searchQuery))
     data = cursor.fetchone()
     cursor.close()
