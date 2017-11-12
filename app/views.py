@@ -33,15 +33,15 @@ def authenticated():
 def get_fname():
     if not authenticated():
         return ""
-    if 'fname' in session:
-        return session['fname']
+    if 'first_name' in session:
+        return session['first_name']
     uname = session['username']
     cursor = conn.cursor()
-    q = 'SELECT fname FROM person WHERE uname = %s'
+    q = 'SELECT first_name FROM Person WHERE username = %s'
     cursor.execute(q, (uname))
     result = cursor.fetchone()
-    session['fname'] = result['fname']
-    return session['fname']
+    session['first_name'] = result['first_name']
+    return session['first_name']
 
 #Routes Index Page
 @app.route('/')
@@ -75,7 +75,7 @@ def loginAuth():
     #cursor used to send queries
     cursor = conn.cursor()
     #executes query
-    query = 'SELECT * FROM person WHERE uname = %s and password = %s'
+    query = 'SELECT * FROM Person WHERE username = %s and password = %s'
     cursor.execute(query, (username, hashlib.md5(password.encode('utf-8')).hexdigest()))
     #stores the results in a variable
     data = cursor.fetchone()
@@ -107,7 +107,7 @@ def registerAuth():
     #cursor used to send queries
     cursor = conn.cursor()
     #executes query
-    query = 'SELECT * FROM person WHERE uname = %s'
+    query = 'SELECT * FROM Person WHERE username = %s'
     cursor.execute(query, (username))
     #stores the results in a variable
     data = cursor.fetchone()
@@ -118,48 +118,60 @@ def registerAuth():
         error = username + " is taken. Try another."
         return render_template('register.html', error = error)
     else:
-        ins = 'INSERT INTO person (uname, password, fname, lname) VALUES(%s, %s, %s, %s)'
+        ins = 'INSERT INTO Person (username, password, first_name, last_name) VALUES(%s, %s, %s, %s)'
         cursor.execute(ins, (username, hashlib.md5(password.encode('utf-8')).hexdigest(), fname, lname))
         conn.commit()
         cursor.close()
         session['username'] = username
         return redirect(url_for('home'))
 
-def retrieveData():
-    username = session['username']
-    cursor = conn.cursor();
-    query = 'SELECT date, name, file_path FROM content WHERE uname = %s ORDER BY date DESC'
-    cursor.execute(query, (username))
-    data = cursor.fetchall()
-    query = 'SELECT fname FROM person WHERE uname = %s'
-    cursor.execute(query, (username))
-    data2 = cursor.fetchone()
-    cursor.close()
-    return {"username": username, "posts": data, "fname": data2['fname']}
+# def retrieveData():
+#     username = session['username']
+#     cursor = conn.cursor();
+#     query = 'SELECT timest, content_name, file_path FROM Content WHERE username = %s ORDER BY timest DESC'
+#     cursor.execute(query, (username))
+#     data = cursor.fetchall()
+#     query = 'SELECT first_name FROM Person WHERE username = %s'
+#     cursor.execute(query, (username))
+#     data2 = cursor.fetchone()
+#     cursor.close()
+#     return {"username": username, "posts": data, "fname": data2['first_name']}
 
-#Routes Home Page Once Logged In
+# #Routes Home Page Once Logged In
+# @app.route('/homeold')
+# @login_required
+# def home():
+#     data = retrieveData()
+#     uname = session['username']
+#     return render_template('home.html', username=uname, posts=data["posts"], fname=get_fname())
+
 @app.route('/home')
 @login_required
 def home():
-    data = retrieveData()
-    uname = session['username']
-    return render_template('home.html', username=uname, posts=data["posts"], fname=get_fname())
-
-@app.route('/feed')
-@login_required
-def feed():
     uname = session['username']
     cursor = conn.cursor()
-    q =  '(SELECT DISTINCT date, name, file_path\
-          FROM content NATURAL JOIN share NATURAL JOIN member\
-          WHERE member = %s)\
-          UNION\
-          (SELECT date, name, file_path\
-          FROM content \
-          WHERE is_pub or uname = %s)\
-          ORDER BY date desc'
+    q =  'SELECT id, file_path, content_name, timest\
+    		username, first_name, last_name\
+          FROM Content NATURAL JOIN Person\
+          WHERE username = %s\
+          OR public\
+          OR id in\
+          	(SELECT id\
+          	 FROM Share JOIN Member ON\
+          	 	Share.username = Member.username_creator\
+          	 	AND Share.group_name = Member.group_name\
+          	 WHERE Member.username = %s)\
+          ORDER BY timest DESC'
     cursor.execute(q, (uname, uname))
     data = cursor.fetchall()
+
+    q = 'SELECT username, timest, comment_text\
+    	 FROM Comment\
+    	 WHERE id = %s'
+    for d in data:
+    	cursor.execute(q, (d['id']))
+    	d['comments'] = cursor.fetchall()
+
     cursor.close()
     return render_template('home.html', username=uname, posts=data, fname=get_fname())
 
@@ -167,7 +179,7 @@ def feed():
 #Logging out
 @app.route('/logout')
 def logout():
-    session.pop('fname')
+    session.pop('first_name')
     session.pop('username')
     return redirect('/')
 
@@ -179,15 +191,16 @@ def post():
     cursor = conn.cursor();
     cname = request.form['name']
     photo = request.files['file']
+    is_public = 1 if request.form.get('public') == "public" else 0
     if photo:
         filename = secure_filename(photo.filename)
         #os.chmod(app.config["PHOTO_DIRECTORY"], 0o777)
         photo.save(os.path.join(app.config["PHOTO_DIRECTORY"], filename))
-        q = 'INSERT INTO content(name, file_path, uname) VALUES(%s, %s, %s)'
-        cursor.execute(q, (cname, filename, uname))
+        q = 'INSERT INTO Content(content_name, file_path, username, public) VALUES(%s, %s, %s, %s)'
+        cursor.execute(q, (cname, filename, uname, int(is_public)))
     else:
-        q = 'INSERT INTO content(name, uname) VALUES (%s, %s)'
-        cursor.execute(q, (cname, uname))
+        q = 'INSERT INTO Content(content_name, username, public) VALUES (%s, %s, %s)'
+        cursor.execute(q, (cname, uname, is_public))
     conn.commit()
     cursor.close()
     return redirect(url_for('home'))
@@ -199,7 +212,7 @@ def retrieve_file(filename):
         abort(404)
     uname = session['username']
     cursor = conn.cursor()
-    q = "SELECT file_path FROM content WHERE uname = %s AND file_path = %s"
+    q = "SELECT file_path FROM Content WHERE username = %s AND file_path = %s"
     cursor.execute(q, (uname, filename))
     res = cursor.fetchone()
     if res:
@@ -214,7 +227,7 @@ def search():
     username = session['username']
     cursor = conn.cursor()
     searchQuery = request.form['query']
-    query = 'SELECT date, name FROM content WHERE uname = %s AND name LIKE "\%%s" ORDER BY date DESC'
+    query = 'SELECT timest, content_name FROM Content WHERE username = %s AND content_name LIKE "\%%s" ORDER BY timest DESC'
     cursor.execute(query, (searchQuery))
     data = cursor.fetchone()
     cursor.close()
