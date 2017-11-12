@@ -75,14 +75,6 @@ Home
 	<img src="/content/{{line.file_path}}" class="img-responsive img-rounded">
 </div>
 <div class="panel-footer">
-	{% for c in line.comments %}
-		<span class="text-info">{{c.username}}</span>
-		{{c.comment_text}}
-		<div class="pull-right">
-			<small>{{c.timest|time_ago}}</small>
-		</div>
-		<br />
-	{% endfor %}
 	<form class="form" style="padding-bottom:0pt;" action="/comment" method="POST">
 		<div class="form-group">
 			<div class="input-group">
@@ -94,6 +86,14 @@ Home
 			</div>
 		</div>
 	</form>
+	{% for c in line.comments %}
+		<span class="text-info">{{c.username}}</span>
+		{{c.comment_text}}
+		<div class="pull-right">
+			<small>{{c.timest|time_ago}}</small>
+		</div>
+		<br />
+	{% endfor %}
 </div>
 </div>
 {% endfor %}
