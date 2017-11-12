@@ -167,7 +167,8 @@ def home():
 
     q = 'SELECT username, timest, comment_text\
     	 FROM Comment\
-    	 WHERE id = %s'
+    	 WHERE id = %s\
+    	 ORDER BY timest DESC'
     for d in data:
     	cursor.execute(q, (d['id']))
     	d['comments'] = cursor.fetchall()
@@ -219,6 +220,19 @@ def retrieve_file(filename):
         return send_from_directory(app.config['PHOTO_DIRECTORY'], filename)
     else:
         abort(404)
+
+@app.route('/comment', methods=['POST'])
+@login_required
+def comment():
+	uname = session['username']
+	cursor = conn.cursor()
+	id = request.form['id']
+	comment_text = request.form['comment']
+	q = 'INSERT INTO Comment(id, username, comment_text) VALUES (%s, %s, %s)'
+	cursor.execute(q, (id, uname, comment_text))
+	conn.commit()
+	cursor.close()
+	return redirect(url_for('home'))
 
 
 #Searching
