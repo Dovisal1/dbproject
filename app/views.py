@@ -150,7 +150,7 @@ def registerAuth():
 def home():
     uname = session['username']
     cursor = conn.cursor()
-    q =  'SELECT id, file_path, content_name, timest\
+    q =  'SELECT id, file_path, content_name, timest,\
     		username, first_name, last_name\
           FROM Content NATURAL JOIN Person\
           WHERE username = %s\
@@ -165,13 +165,23 @@ def home():
     cursor.execute(q, (uname, uname))
     data = cursor.fetchall()
 
-    q = 'SELECT username, timest, comment_text\
-    	 FROM Comment\
-    	 WHERE id = %s\
-    	 ORDER BY timest DESC'
+    q1 = 'SELECT username, first_name, last_name, timest, comment_text\
+    	  FROM Comment NATURAL JOIN Person\
+    	  WHERE id = %s\
+    	  ORDER BY timest DESC'
+
+    q2 = 'SELECT first_name, last_name\
+    	  FROM Tag JOIN Person ON\
+    	  	Tag.username_taggee = Person.username\
+    	  WHERE id = %s AND status = true\
+    	  ORDER BY timest DESC'
+
     for d in data:
-    	cursor.execute(q, (d['id']))
+    	cursor.execute(q1, (d['id']))
     	d['comments'] = cursor.fetchall()
+
+    	cursor.execute(q2, (d['id']))
+    	d['tags'] = cursor.fetchall()
 
     cursor.close()
     return render_template('home.html', username=uname, posts=data, fname=get_fname())
@@ -225,14 +235,50 @@ def retrieve_file(filename):
 @login_required
 def comment():
 	uname = session['username']
-	cursor = conn.cursor()
 	id = request.form['id']
 	comment_text = request.form['comment']
+
+	if comment_text == '':
+		return redirect(url_for('home'))
+
 	q = 'INSERT INTO Comment(id, username, comment_text) VALUES (%s, %s, %s)'
+	cursor = conn.cursor()
 	cursor.execute(q, (id, uname, comment_text))
 	conn.commit()
 	cursor.close()
 	return redirect(url_for('home'))
+
+@app.route('/commentdel', methods=['GET'])
+@login_required
+def commentdel():
+	uname = session['username']
+
+	#extract params
+	id = request.args.get('id')
+	commenter = request.args.get('username')
+	ts = request.args.get('ts')
+
+	# get content owner
+	q = 'SELECT username\
+		 FROM Content\
+		 WHERE id = %s'
+	cursor = conn.cursor()
+	cursor.execute(q, (id))
+	item_owner = cursor.fetchone()
+
+	if uname != item_owner and uname != commenter:
+		return redirect(url_for('home'))
+
+	q = 'DELETE FROM Comment\
+		 WHERE id = %s\
+		 AND username = %s\
+		 AND timest = %s'
+
+	cursor.execute(q, (id, commenter, ts))
+	conn.commit()
+	cursor.close()
+	return redirect(url_for('home'))
+
 
 
 #Searching
