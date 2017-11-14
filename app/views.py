@@ -150,19 +150,42 @@ def registerAuth():
 def home():
     uname = session['username']
     cursor = conn.cursor()
-    q =  'SELECT id, file_path, content_name, timest,\
-    		username, first_name, last_name\
+
+    searchQuery = request.args.get('q')
+
+    if not searchQuery:
+        q =  'SELECT id, file_path, content_name, timest,\
+        		username, first_name, last_name\
+              FROM Content NATURAL JOIN Person\
+              WHERE username = %s\
+              OR public\
+              OR id in\
+              	(SELECT id\
+              	 FROM Share JOIN Member ON\
+              	 	Share.username = Member.username_creator\
+              	 	AND Share.group_name = Member.group_name\
+              	 WHERE Member.username = %s)\
+              ORDER BY timest DESC'
+        cursor.execute(q, (uname, uname))
+    else:
+        q =  'SELECT id, file_path, content_name, timest,\
+            username, first_name, last_name\
           FROM Content NATURAL JOIN Person\
-          WHERE username = %s\
+          WHERE (username = %s\
           OR public\
           OR id in\
-          	(SELECT id\
-          	 FROM Share JOIN Member ON\
-          	 	Share.username = Member.username_creator\
-          	 	AND Share.group_name = Member.group_name\
-          	 WHERE Member.username = %s)\
+            (SELECT id\
+             FROM Share JOIN Member ON\
+                Share.username = Member.username_creator\
+                AND Share.group_name = Member.group_name\
+             WHERE Member.username = %s)\
+            )\
+          AND (\
+               content_name like %s\
+            OR username like %s)\
           ORDER BY timest DESC'
-    cursor.execute(q, (uname, uname))
+        cursor.execute(q, (uname, uname, searchQuery, searchQuery))
+
     data = cursor.fetchall()
 
     q1 = 'SELECT username, first_name, last_name, timest, comment_text\
@@ -283,12 +306,29 @@ def commentdel():
 
 #Searching
 @app.route('/search', methods=['GET', 'POST'])
+@login_required
 def search():
     username = session['username']
     cursor = conn.cursor()
     searchQuery = request.form['query']
-    query = 'SELECT timest, content_name FROM Content WHERE username = %s AND content_name LIKE "\%%s" ORDER BY timest DESC'
-    cursor.execute(query, (searchQuery))
-    data = cursor.fetchone()
+
+    q =  'SELECT id, file_path, content_name, timest,\
+            username, first_name, last_name\
+          FROM Content NATURAL JOIN Person\
+          WHERE (username = %s\
+          OR public\
+          OR id in\
+            (SELECT id\
+             FROM Share JOIN Member ON\
+                Share.username = Member.username_creator\
+                AND Share.group_name = Member.group_name\
+             WHERE Member.username = %s))\
+          AND (\
+               content_name like "\%%s%"\
+            OR username like "\%%s%")\
+          ORDER BY timest DESC'
+
+    cursor.execute(q, (searchQuery))
+    data = cursor.all()
     cursor.close()
-    return render_template("search_results.html", posts=data)
+    return render_template("home.html", username=username, posts=data, fname=get_fname())
