@@ -302,6 +302,28 @@ def commentdel():
 	cursor.close()
 	return redirect(url_for('home'))
 
+@app.route('/friends')
+@login_required
+def friends():
+    uname = session['username']
+
+    cursor = conn.cursor()
+    q = """
+        SELECT first_name, last_name, id,
+            Tag.timest, content_name
+        FROM Person JOIN Tag
+            ON Person.username = Tag.username_tagger
+            JOIN Content USING(id) 
+        WHERE not status
+        AND username_taggee = %s
+        ORDER BY timest DESC
+        """
+
+    cursor.execute(q, (uname))
+    tags = cursor.fetchall()
+    cursor.close()
+
+    return render_template('friends.html', tags=tags, fname=get_fname())
 
 
 #Searching
