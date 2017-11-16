@@ -1,6 +1,6 @@
 
 from flask import render_template, request, redirect, session, url_for
-from flask import send_from_directory, abort
+from flask import send_from_directory, abort, flash
 from flask import Flask
 
 from functools import wraps
@@ -144,6 +144,7 @@ def registerAuth():
 #     data = retrieveData()
 #     uname = session['username']
 #     return render_template('home.html', username=uname, posts=data["posts"], fname=get_fname())
+
 
 @app.route('/home')
 @login_required
@@ -327,6 +328,56 @@ def friends():
     cursor.close()
 
     return render_template('friends.html', tags=tags, fname=get_fname())
+
+@app.route('/tag', methods=['POST'])
+@login_required
+def tag():
+	uname = session['username']
+
+	taggee = request.form['taggee']
+	id = request.form['id']
+
+	cursor = conn.cursor()
+	q = """
+		INSERT INTO Tag(username_tagger, username_taggee, id, status)
+		VALUES (%s, %s, %s, %s)
+		"""
+
+	if uname == taggee:
+		cursor.execute(q, (uname, uname, id, 1))
+		conn.commit()
+	else:
+		#verify the taggee is valid
+		v = """
+			SELECT id
+			FROM Content
+			WHERE id = %s
+			AND (
+				public
+				OR id IN (
+					SELECT id
+					FROM Share JOIN Member ON
+					Share.username = Member.username_creator
+					AND Share.group_name = Member.group_name
+					Where Member.username = %s
+				)
+			)
+			"""
+		cursor.execute(v, (id, taggee))
+		res = cursor.fetchone()
+
+		if res:
+			cursor.execute(q, (uname, taggee, id, 0))
+			conn.commit()
+		else:
+			e = """
+				Not a valid tag. {} cannot view that item.
+				""".format(taggee)
+			flash(e)
+
+	cursor.close()
+	return redirect(url_for('home'))
+
 
 @app.route('/tagaccept')
 @login_required
