@@ -56,9 +56,9 @@ Friends
 					</a>
 					</span>
 					<br />
-					<a href="/tagaccept">accept</a>
+					<a href="/tagaccept?id={{t.id}}&tagger={{t.username_tagger}}&taggee={{t.username_taggee}}">accept</a>
 					&middot;
-					<a href="tagdecline">decline</a>
+					<a href="/tagdecline?id={{t.id}}&tagger={{t.username_tagger}}&taggee={{t.username_taggee}}">decline</a>
 				</div>
 			{% endfor %}
 		</div>

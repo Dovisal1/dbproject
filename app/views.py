@@ -309,8 +309,11 @@ def friends():
 
     cursor = conn.cursor()
     q = """
-        SELECT first_name, last_name, id,
-            Tag.timest, content_name
+        SELECT first_name,
+            last_name, id,
+            Tag.timest, content_name,
+            username_tagger,
+            username_taggee
         FROM Person JOIN Tag
             ON Person.username = Tag.username_tagger
             JOIN Content USING(id) 
@@ -324,6 +327,55 @@ def friends():
     cursor.close()
 
     return render_template('friends.html', tags=tags, fname=get_fname())
+
+@app.route('/tagaccept')
+@login_required
+def tagaccept():
+    uname = session['username']
+
+    tagger = request.args.get('tagger')
+    taggee = request.args.get('taggee')
+    id = request.args.get('id')
+
+    if uname != taggee:
+        return redirect(url_for('friends'))
+
+    cursor = conn.cursor()
+    q = """
+        UPDATE Tag
+        SET status = true
+        WHERE id = %s
+        AND username_tagger = %s
+        AND username_taggee = %s
+        """
+    cursor.execute(q, (id, tagger, taggee))
+    conn.commit()
+    cursor.close()
+    return redirect(url_for('friends'))
+
+@app.route('/tagdecline')
+@login_required
+def tagdecline():
+    uname = session['username']
+
+    tagger = request.args.get('tagger')
+    taggee = request.args.get('taggee')
+    id = request.args.get('id')
+
+    if uname != taggee:
+        return redirect(url_for('friends'))
+
+    cursor = conn.cursor()
+    q = """
+        DELETE FROM Tag
+        WHERE id = %s
+        AND username_tagger = %s
+        AND username_taggee = %s
+        """
+    cursor.execute(q, (id, tagger, taggee))
+    conn.commit()
+    cursor.close()
+    return redirect(url_for('friends'))
 
 
 #Searching
