@@ -1,0 +1,72 @@
+
+{% extends "base.html" %}
+
+{% set nav_active = 'friends' %}
+{% set authenticated = True %}
+
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block btitle %}
+Friends
+{% endblock %}
+
+{% block bstyles %}
+<style>
+    form {
+        padding-top: 20px;
+        padding-bottom: 30px;
+    }
+    .panel-body .img-responsive {
+    	margin: 0 auto;
+    }
+</style>
+{% endblock %}
+
+{% block page_content %}
+
+<div class="col-md-7">
+	<h2>FriendGroups</h2>
+</div>
+
+{% if tags %}
+<div class="col-md-5">
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h2 style="margin: 3pt;">Pending Tags</h2>
+		</div>
+		<div class="panel-body">
+			{% for t in tags %}
+				<div>
+					{% if loop.index != 1 %}
+					<hr>
+					{% endif %}
+					<div class="pull-right">
+						<small>
+							{{t.timest|time_ago}}
+						</small>
+					</div>
+					<span class="text-info">
+						{{t.first_name}} {{t.last_name}}
+					</span>
+					has tagged you in
+					<a href="/home#{{t.id}}">
+						{{t.content_name}}
+					</a>
+					</span>
+					<br />
+					<a href="/tagaccept">accept</a>
+					&middot;
+					<a href="tagdecline">decline</a>
+				</div>
+			{% endfor %}
+		</div>
+		</div>
+	</div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+
