@@ -264,7 +264,7 @@ def commentdel():
 		 WHERE id = %s'
 	cursor = conn.cursor()
 	cursor.execute(q, (id))
-	item_owner = cursor.fetchone()
+	item_owner = cursor.fetchone()['username']
 
 	if uname != item_owner and uname != commenter:
 		return redirect(url_for('home'))
