@@ -325,9 +325,29 @@ def friends():
 
     cursor.execute(q, (uname))
     tags = cursor.fetchall()
-    cursor.close()
 
-    return render_template('friends.html', tags=tags, fname=get_fname())
+    q = """
+    	SELECT group_name, description
+    	FROM FriendGroup
+    	WHERE username = %s
+    	"""
+
+    cursor.execute(q, (uname))
+    groups = cursor.fetchall()
+
+    q = """
+    	SELECT first_name, last_name
+    	FROM Person NATURAL JOIN Member
+    	WHERE group_name = %s
+    	AND username_creator = %s
+    	"""
+
+    for g in groups:
+    	cursor.execute(q, (g['group_name'], uname))
+    	g['members'] = cursor.fetchall()
+
+    cursor.close()
+    return render_template('friends.html', tags=tags, groups=groups, fname=get_fname())
 
 @app.route('/tag', methods=['POST'])
 @login_required
@@ -427,6 +447,62 @@ def tagdecline():
     conn.commit()
     cursor.close()
     return redirect(url_for('friends'))
+
+@app.route('/groupadd', methods=['POST'])
+@login_required
+def groupadd():
+	uname = session['username']
+
+	group_name = request.form['group_name']
+	desc = request.form['description']
+
+	q = """
+		INSERT INTO FriendGroup(group_name, username, description)
+		VALUES (%s, %s, %s)
+		"""
+
+	cursor = conn.cursor()
+	cursor.execute(q, (group_name, uname, desc))
+	conn.commit()
+	cursor.close()
+	return redirect(url_for('friends'))
+
+@app.route('/memberadd', methods=['POST'])
+@login_required
+def memberadd():
+	uname = session['username']
+
+	group_name = request.form['group_name']
+	fname = request.form['fname']
+	lname = request.form['lname']
+
+	q = """
+		SELECT username
+		FROM Person
+		WHERE first_name = %s
+		AND last_name = %s
+		"""
+
+	cursor = conn.cursor()
+	cursor.execute(q, (fname, lname))
+	res = cursor.fetchall()
+
+	if len(res) != 1:
+		#error
+		pass
+	else:
+		member = res[0]['username']
+		q = """
+			INSERT INTO Member(username, group_name, username_creator)
+			VALUES (%s, %s, %s)
+			"""
+		cursor.execute(q, (member, group_name, uname))
+		conn.commit()
+
+	cursor.close()
+	return redirect(url_for('friends'))
+
+
 
 
 #Searching
