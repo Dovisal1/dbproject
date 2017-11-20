@@ -480,37 +480,42 @@ def groupadd():
 @app.route('/memberadd', methods=['POST'])
 @login_required
 def memberadd():
-	uname = session['username']
-
-	group_name = request.form['group_name']
-	fname = request.form['fname']
-	lname = request.form['lname']
-
-	q = """
+    uname = session['username']
+    group_name = request.form['group_name']
+    fname = request.form['fname']
+    lname = request.form['lname']
+    uname = request.form['uname']
+    q = """
 		SELECT username
 		FROM Person
 		WHERE first_name = %s
 		AND last_name = %s
 		"""
-
-	cursor = conn.cursor()
-	cursor.execute(q, (fname, lname))
-	res = cursor.fetchall()
-
-	if len(res) != 1:
-		#error
-		pass
-	else:
-		member = res[0]['username']
-		q = """
+    cursor = conn.cursor()
+    cursor.execute(q, (fname, lname))
+    res = cursor.fetchall()
+    
+    
+    if len(res) != 1:
+        #need to implement better solution
+        e = """
+            Users with same name. Enter Appropriate Username:
+            """
+        for i in range(len(res)):
+            e += str(i+1) + ". " + fname + " " + lname + " (" + res[i]['username'] + ") "
+        flash(e)
+        return redirect(url_for('friends'))
+    else:
+        member = res[0]['username']
+        q = """
 			INSERT INTO Member(username, group_name, username_creator)
 			VALUES (%s, %s, %s)
 			"""
-		cursor.execute(q, (member, group_name, uname))
-		conn.commit()
+        cursor.execute(q, (member, group_name, uname))
+        conn.commit()
 
-	cursor.close()
-	return redirect(url_for('friends'))
+    cursor.close()
+    return redirect(url_for('friends'))
 
 
 
