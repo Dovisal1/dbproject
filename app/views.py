@@ -451,21 +451,31 @@ def tagdecline():
 @app.route('/groupadd', methods=['POST'])
 @login_required
 def groupadd():
-	uname = session['username']
+    uname = session['username']
 
-	group_name = request.form['group_name']
-	desc = request.form['description']
-
-	q = """
-		INSERT INTO FriendGroup(group_name, username, description)
-		VALUES (%s, %s, %s)
-		"""
-
-	cursor = conn.cursor()
-	cursor.execute(q, (group_name, uname, desc))
-	conn.commit()
-	cursor.close()
-	return redirect(url_for('friends'))
+    group_name = request.form['group_name']
+    desc = request.form['description']
+    v = """
+        SELECT group_name FROM FriendGroup WHERE group_name = %s
+        """
+    cursor = conn.cursor()
+    cursor.execute(v, group_name)
+    res = cursor.fetchall()
+    if (res[0]['group_name']==group_name):
+        e = """
+            Group Already Exists.
+            """
+        flash(e)
+    else:
+        q = """
+            INSERT INTO FriendGroup(group_name, username, description)
+            VALUES (%s, %s, %s)
+            """
+        cursor = conn.cursor()
+        cursor.execute(q, (group_name, uname, desc))
+        conn.commit()
+    cursor.close()
+    return redirect(url_for('friends'))
 
 @app.route('/memberadd', methods=['POST'])
 @login_required
