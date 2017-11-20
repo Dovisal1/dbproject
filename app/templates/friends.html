@@ -30,6 +30,14 @@ Friends
 	<div class="page-header">
 		<h2>FriendGroups</h2>
 	</div>
+	{% with error = get_flashed_messages() %}
+	{% for e in error %}
+	<div class="alert alert-danger fade in">
+    	<a href='#' class="close" data-dismiss="alert" aria-label="close">&times;</a>
+    <strong>Error:</strong> {{e}}
+	</div>
+	{% endfor %}
+	{% endwith %}
 	<div class="well">
 		<h4>
 			Create a FriendGroup
@@ -47,14 +55,6 @@ Friends
 			</button>
 		</form>
 	</div>
-	{% with error = get_flashed_messages() %}
-    	{% for e in error %}
-    	<div class="alert alert-danger fade in">
-        	<a href='#' class="close" data-dismiss="alert" aria-label="close">&times;</a>
-        <strong>Error:</strong> {{e}}
-    	</div>
-    	{% endfor %}
-    	{% endwith %}
 	{% if groups %}
 	<div class="well">
 		<h4>Add a member</h4>
@@ -82,14 +82,6 @@ Friends
             </button>
 		</form>
 	</div>
-	{% with error = get_flashed_messages() %}
-    	{% for e in error %}
-    	<div class="alert alert-danger fade in">
-       		<a href='#' class="close" data-dismiss="alert" aria-label="close">&times;</a>
-        	<strong>Error:</strong> {{e}}
-    	</div>
-    	{% endfor %}
-    	{% endwith %}
 	{% for group in groups %}
 		<div class="panel panel-default">
 			<div class="panel-heading">
