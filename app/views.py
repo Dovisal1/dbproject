@@ -306,51 +306,59 @@ def commentdel():
 	cursor.close()
 	return redirect(url_for('home'))
 
+def fetch_friend_data(uname):
+    with conn.cursor() as cursor:
+        cursor = conn.cursor()
+        q = """
+            SELECT first_name,
+                last_name, id,
+                Tag.timest, content_name,
+                username_tagger,
+                username_taggee
+            FROM Person JOIN Tag
+                ON Person.username = Tag.username_tagger
+                JOIN Content USING(id) 
+            WHERE not status
+            AND username_taggee = %s
+            ORDER BY timest DESC
+            """
+
+        cursor.execute(q, (uname))
+        tags = cursor.fetchall()
+
+        q = """
+            SELECT group_name, description
+            FROM FriendGroup
+            WHERE username = %s
+            """
+
+        cursor.execute(q, (uname))
+        groups = cursor.fetchall()
+
+        q = """
+            SELECT first_name, last_name
+            FROM Person NATURAL JOIN Member
+            WHERE group_name = %s
+            AND username_creator = %s
+            """
+
+        for g in groups:
+            cursor.execute(q, (g['group_name'], uname))
+            g['members'] = cursor.fetchall()
+
+    return {'tags': tags, 'groups': groups}
+
+
 @app.route('/friends')
 @login_required
 def friends():
-    uname = session['username']
-
-    cursor = conn.cursor()
-    q = """
-        SELECT first_name,
-            last_name, id,
-            Tag.timest, content_name,
-            username_tagger,
-            username_taggee
-        FROM Person JOIN Tag
-            ON Person.username = Tag.username_tagger
-            JOIN Content USING(id) 
-        WHERE not status
-        AND username_taggee = %s
-        ORDER BY timest DESC
-        """
-
-    cursor.execute(q, (uname))
-    tags = cursor.fetchall()
-
-    q = """
-    	SELECT group_name, description
-    	FROM FriendGroup
-    	WHERE username = %s
-    	"""
-
-    cursor.execute(q, (uname))
-    groups = cursor.fetchall()
-
-    q = """
-    	SELECT first_name, last_name
-    	FROM Person NATURAL JOIN Member
-    	WHERE group_name = %s
-    	AND username_creator = %s
-    	"""
-
-    for g in groups:
-    	cursor.execute(q, (g['group_name'], uname))
-    	g['members'] = cursor.fetchall()
-
-    cursor.close()
-    return render_template('friends.html', tags=tags, groups=groups, fname=get_fname())
+    d = fetch_friend_data(session['username'])
+    return render_template(
+        'friends.html',
+        tags=d['tags'],
+        groups=d['groups'],
+        fname=get_fname()
+        )
 
 @app.route('/tag', methods=['POST'])
 @login_required
@@ -504,6 +512,7 @@ def memberadd():
         e = """
             Users with same name. Enter Appropriate Username:
             """
+
         for i in range(len(res)):
             e += str(i+1) + ". " + fname + " " + lname + " (" + res[i]['username'] + ") "
         flash(e)
