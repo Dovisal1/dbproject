@@ -36,10 +36,13 @@ def get_fname():
     if 'first_name' in session:
         return session['first_name']
     uname = session['username']
-    cursor = conn.cursor()
+
     q = 'SELECT first_name FROM Person WHERE username = %s'
-    cursor.execute(q, (uname))
-    result = cursor.fetchone()
+
+    with conn.cursor() as cursor:
+    	cursor.execute(q, (uname))
+    	result = cursor.fetchone()
+    
     session['first_name'] = result['first_name']
     return session['first_name']
 
