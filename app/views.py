@@ -484,7 +484,7 @@ def memberadd():
     group_name = request.form['group_name']
     fname = request.form['fname']
     lname = request.form['lname']
-    uname = request.form['uname']
+
     q = """
 		SELECT username
 		FROM Person
