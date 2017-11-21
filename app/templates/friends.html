@@ -61,6 +61,7 @@ Friends
 		<form class="form" action="/memberadd{%if duplicate_name_error %}u{%endif%}" method="POST">
 			<div class="form-group">
 				<select class="form-control" name="group_name">
+					<option value="" disabled selected hidden>Group</option>
 					{% for group in groups %}
 					<option>{{group.group_name}}</option>
 					{% endfor %}
@@ -69,6 +70,7 @@ Friends
 			{% if duplicate_name_error %}
 			<div class="form-group">
 				<select class="form-control" name="username">
+					<option value="" disabled selected hidden>Usernames</option>
 					{% for u in usernames %}
 					<option>{{u.username}}</option>
 					{% endfor %}
@@ -93,9 +95,9 @@ Friends
 		</form>
 	</div>
 	{% if duplicate_name_error %}
-	<div class="alert alert-danger fade in">
+	<div class="alert alert-warning alert-dismissable fade in">
     	<a href='#' class="close" data-dismiss="alert" aria-label="close">&times;</a>
-    	<strong>Error:</strong> Multiple users have that name. Select the username you wish to add.
+    	Multiple users have that name. Select the username you wish to add.
 	</div>
 	{% endif %}
 	{% for group in groups %}

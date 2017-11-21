@@ -530,10 +530,14 @@ def memberadd():
 			INSERT INTO Member(username, group_name, username_creator)
 			VALUES (%s, %s, %s)
 			"""
-        cursor.execute(q, (member, group_name, uname))
-        conn.commit()
-        m = "{} successfully add to {}".format(member, group_name)
-        flash(m, "success")
+        try:
+            cursor.execute(q, (member, group_name, uname))
+            conn.commit()
+            m = "{} successfully add to {}".format(member, group_name)
+            flash(m, "success")
+        except pymysql.err.IntegrityError as e:
+            m = "{} is already in {}.".format(member, group_name)
+            flash(m, "warning")
         
     cursor.close()
     return redirect(url_for('friends'))
@@ -551,11 +555,15 @@ def memberaddu():
         """
 
     with conn.cursor() as cursor:
-        cursor.execute(q, (member, group_name, uname))
-
-    conn.commit()
-    m = "{} successfully add to {}".format(member, group_name)
-    flash(m, "success")
+        try:
+            cursor.execute(q, (member, group_name, uname))
+            conn.commit()
+            m = "{} successfully add to {}".format(member, group_name)
+            flash(m, "success")
+        except pymysql.err.IntegrityError as e:
+            m = "{} is already in {}.".format(member, group_name)
+            flash(m, "warning")
+        
     return redirect(url_for('friends'))
 
 
