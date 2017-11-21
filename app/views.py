@@ -404,7 +404,7 @@ def tag():
 			e = """
 				Not a valid tag. {} cannot view that item.
 				""".format(taggee)
-			flash(e)
+			flash(e, "danger")
 
 	cursor.close()
 	return redirect(url_for('home'))
@@ -476,7 +476,7 @@ def groupadd():
         e = """
             Group Already Exists.
             """
-        flash(e)
+        flash(e, "danger")
     else:
         q = """
             INSERT INTO FriendGroup(group_name, username, description)
@@ -495,28 +495,35 @@ def memberadd():
     group_name = request.form['group_name']
     fname = request.form['fname']
     lname = request.form['lname']
-
+    
     q = """
-		SELECT username
-		FROM Person
-		WHERE first_name = %s
-		AND last_name = %s
-		"""
+        SELECT username
+        FROM Person
+        WHERE first_name = %s
+        AND last_name = %s
+        """
+
     cursor = conn.cursor()
     cursor.execute(q, (fname, lname))
     res = cursor.fetchall()
     
-    
-    if len(res) != 1:
+    if len(res) == 0:
+        m = """
+            There is no user {} {}.
+            """.format(fname, lname)
+        flash(m, "warning")
+    elif len(res) > 1:
         #need to implement better solution
-        e = """
-            Users with same name. Enter Appropriate Username:
-            """
-
-        for i in range(len(res)):
-            e += str(i+1) + ". " + fname + " " + lname + " (" + res[i]['username'] + ") "
-        flash(e)
-        return redirect(url_for('friends'))
+        e = "Multiple users have that name. Select the username you wish to add."
+        d = fetch_friend_data(session['username'])
+        return render_template(
+            'friends.html',
+            tags=d['tags'],
+            groups=d['groups'],
+            duplicate_name_error=True,
+            usernames=res,
+            fname=get_fname()
+            )
     else:
         member = res[0]['username']
         q = """
@@ -525,11 +532,31 @@ def memberadd():
 			"""
         cursor.execute(q, (member, group_name, uname))
         conn.commit()
-
+        m = "{} successfully add to {}".format(member, group_name)
+        flash(m, "success")
+        
     cursor.close()
     return redirect(url_for('friends'))
 
+@app.route('/memberaddu', methods=['POST'])
+@login_required
+def memberaddu():
+    uname = session['username']
+    member = request.form['username']
+    group_name = request.form['group_name']
 
+    q = """
+        INSERT INTO Member(username, group_name, username_creator)
+        VALUES (%s, %s, %s)
+        """
+
+    with conn.cursor() as cursor:
+        cursor.execute(q, (member, group_name, uname))
+
+    conn.commit()
+    m = "{} successfully add to {}".format(member, group_name)
+    flash(m, "success")
+    return redirect(url_for('friends'))
 
 
 #Searching

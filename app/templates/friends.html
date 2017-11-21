@@ -30,11 +30,11 @@ Friends
 	<div class="page-header">
 		<h2>FriendGroups</h2>
 	</div>
-	{% with error = get_flashed_messages() %}
-	{% for e in error %}
-	<div class="alert alert-danger fade in">
+	{% with error = get_flashed_messages(with_categories=true) %}
+	{% for c, e in error %}
+	<div class="alert alert-{{c}} alert-dismissable fade in">
     	<a href='#' class="close" data-dismiss="alert" aria-label="close">&times;</a>
-    <strong>Error:</strong> {{e}}
+    	{{e}}
 	</div>
 	{% endfor %}
 	{% endwith %}
@@ -58,7 +58,7 @@ Friends
 	{% if groups %}
 	<div class="well">
 		<h4>Add a member</h4>
-		<form class="form" action="/memberadd" method="POST">
+		<form class="form" action="/memberadd{%if duplicate_name_error %}u{%endif%}" method="POST">
 			<div class="form-group">
 				<select class="form-control" name="group_name">
 					{% for group in groups %}
@@ -66,6 +66,15 @@ Friends
 					{% endfor %}
 				</select>
 			</div>
+			{% if duplicate_name_error %}
+			<div class="form-group">
+				<select class="form-control" name="username">
+					{% for u in usernames %}
+					<option>{{u.username}}</option>
+					{% endfor %}
+				</select>
+			</div>
+			{% else %}
 			<div class="form-group">
                 <div class="row">
                     <div class="col-sm-6">                    
@@ -76,12 +85,19 @@ Friends
                     </div>
                 </div>
             </div>
+            {% endif %}
             <button class="btn btn-default btn-block">
             	<span class="glyphicon glyphicon-plus"></span>
             	Add Member
             </button>
 		</form>
 	</div>
+	{% if duplicate_name_error %}
+	<div class="alert alert-danger fade in">
+    	<a href='#' class="close" data-dismiss="alert" aria-label="close">&times;</a>
+    	<strong>Error:</strong> Multiple users have that name. Select the username you wish to add.
+	</div>
+	{% endif %}
 	{% for group in groups %}
 		<div class="panel panel-default">
 			<div class="panel-heading">
