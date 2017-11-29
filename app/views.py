@@ -11,6 +11,7 @@ import pymysql.cursors
 import hashlib
 import os, sys, stat
 from werkzeug.utils import secure_filename
+import uuid
 
 conn = pymysql.connect(host=app.config['DBHOST'],
                        user=app.config['DBUSER'],
@@ -233,9 +234,10 @@ def post():
     if photo:
         filename = secure_filename(photo.filename)
         os.chmod(app.config["PHOTO_DIRECTORY"], 0o775)
-        photo.save(os.path.join(app.config["PHOTO_DIRECTORY"], filename))
+        newfilename = uuid.uuid4().hex
+        photo.save(os.path.join(app.config["PHOTO_DIRECTORY"], newfilename))
         q = 'INSERT INTO Content(content_name, file_path, username, public) VALUES(%s, %s, %s, %s)'
-        cursor.execute(q, (cname, filename, uname, int(is_public)))
+        cursor.execute(q, (cname, newfilename, uname, int(is_public)))
     else:
         q = 'INSERT INTO Content(content_name, username, public) VALUES (%s, %s, %s)'
         cursor.execute(q, (cname, uname, is_public))
