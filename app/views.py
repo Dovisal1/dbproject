@@ -587,6 +587,38 @@ def memberaddu():
     return redirect(url_for('friends'))
 
 
+@app.route('/share', methods=['POST'])
+@login_required
+def share():
+    uname = session['username']
+    group = request.form['group_name']
+    owner = request.form['owner']
+    id = request.form['id']
+
+    if owner == "":
+        owner = uname
+
+    q = """
+        INSERT INTO Share(id, group_name, username)
+        VALUES (%s, %s, %s)
+        """
+
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(q, (id, group, owner))
+        conn.commit()
+        m = """
+            Item successfully shared.
+            """
+        flash(m, 'success')
+    except pymysql.err.IntegrityError:
+        m = """
+            The item is already shared with that group.
+            """
+        flash(m, "warning")
+
+    return redirect(url_for('home'))
+
 #Searching
 @app.route('/search', methods=['GET', 'POST'])
 @login_required
