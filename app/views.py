@@ -324,7 +324,25 @@ def fetch_friend_data(uname):
             """
 
         cursor.execute(q, (uname))
-        tags = cursor.fetchall()
+        tags_pending = cursor.fetchall()
+
+        q = """
+            SELECT first_name,
+                last_name, id,
+                Tag.timest, content_name,
+                username_tagger,
+                username_taggee
+            FROM Person JOIN Tag
+                ON Person.username = Tag.username_taggee
+                JOIN Content USING(id) 
+            WHERE not status
+            AND username_tagger = %s
+            ORDER BY timest DESC
+            """
+
+        cursor.execute(q, (uname))
+        tags_proposed = cursor.fetchall()
+
 
         q = """
             SELECT group_name, description
@@ -346,7 +364,11 @@ def fetch_friend_data(uname):
             cursor.execute(q, (g['group_name'], uname))
             g['members'] = cursor.fetchall()
 
-    return {'tags': tags, 'groups': groups}
+    return {
+        'tags_pending': tags_pending,
+        'tags_proposed': tags_proposed,
+        'groups': groups
+    }
 
 
 @app.route('/friends')
@@ -355,7 +377,8 @@ def friends():
     d = fetch_friend_data(session['username'])
     return render_template(
         'friends.html',
-        tags=d['tags'],
+        tags_pending=d['tags_pending'],
+        tags_proposed=d['tags_proposed'],
         groups=d['groups'],
         fname=get_fname()
         )
@@ -472,7 +495,7 @@ def groupadd():
     cursor = conn.cursor()
     cursor.execute(v, group_name)
     res = cursor.fetchall()
-    if (res[0]['group_name']==group_name):
+    if res:
         e = """
             Group Already Exists.
             """
@@ -518,7 +541,8 @@ def memberadd():
         d = fetch_friend_data(session['username'])
         return render_template(
             'friends.html',
-            tags=d['tags'],
+            tags_pending=d['tags_pending'],
+            tags_proposed=d['tags_proposed'],
             groups=d['groups'],
             duplicate_name_error=True,
             usernames=res,

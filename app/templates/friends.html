@@ -121,14 +121,15 @@ Friends
 	{% endif %}
 </div>
 
-{% if tags %}
 <div class="col-md-5">
+
+{% if tags_pending %}
 	<div class="panel panel-default">
 		<div class="panel-heading">
 			<h2 style="margin: 3pt;">Pending Tags</h2>
 		</div>
 		<div class="panel-body">
-			{% for t in tags %}
+			{% for t in tags_pending %}
 				<div>
 					{% if loop.index != 1 %}
 					<hr>
@@ -145,7 +146,6 @@ Friends
 					<a href="/home#{{t.id}}">
 						{{t.content_name}}
 					</a>
-					</span>
 					<br />
 					<a href="/tagaccept?id={{t.id}}&tagger={{t.username_tagger}}&taggee={{t.username_taggee}}">accept</a>
 					&middot;
@@ -153,10 +153,40 @@ Friends
 				</div>
 			{% endfor %}
 		</div>
+	</div>
+{% endif %}
+
+{% if tags_proposed %}
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h2 style="margin: 3pt;">Proposed Tags</h2>
+		</div>
+		<div class="panel-body">
+			{% for t in tags_proposed %}
+				<div>
+					{% if loop.index != 1 %}
+					<hr>
+					{% endif %}
+					<div class="pull-right">
+						<small>
+							{{t.timest|time_ago}}
+						</small>
+					</div>
+					You tagged
+					<span class="text-info">
+						{{t.first_name}} {{t.last_name}}
+					</span>
+					in
+					<a href="/home#{{t.id}}">
+						{{t.content_name}}
+					</a>
+				</div>
+			{% endfor %}
 		</div>
 	</div>
-</div>
 {% endif %}
+
+</div>
 
 {% endblock %}
 
