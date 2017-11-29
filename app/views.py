@@ -232,7 +232,7 @@ def post():
     is_public = 1 if request.form.get('public') == "public" else 0
     if photo:
         filename = secure_filename(photo.filename)
-        #os.chmod(app.config["PHOTO_DIRECTORY"], 0o777)
+        os.chmod(app.config["PHOTO_DIRECTORY"], 0o775)
         photo.save(os.path.join(app.config["PHOTO_DIRECTORY"], filename))
         q = 'INSERT INTO Content(content_name, file_path, username, public) VALUES(%s, %s, %s, %s)'
         cursor.execute(q, (cname, filename, uname, int(is_public)))
