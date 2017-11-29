@@ -489,26 +489,22 @@ def groupadd():
 
     group_name = request.form['group_name']
     desc = request.form['description']
-    v = """
-        SELECT group_name FROM FriendGroup WHERE group_name = %s
-        """
-    cursor = conn.cursor()
-    cursor.execute(v, group_name)
-    res = cursor.fetchall()
-    if res:
-        e = """
-            Group Already Exists.
-            """
-        flash(e, "danger")
-    else:
-        q = """
-            INSERT INTO FriendGroup(group_name, username, description)
-            VALUES (%s, %s, %s)
-            """
-        cursor = conn.cursor()
-        cursor.execute(q, (group_name, uname, desc))
-        conn.commit()
-    cursor.close()
+
+    q = """
+    	INSERT INTO FriendGroup(group_name, username, description)
+    	VALUES (%s, %s, %s)
+    	"""
+
+    with conn.cursor() as cursor:
+    	try:
+    		cursor.execute(q, (group_name, uname, desc))
+    		conn.commit()
+    	except pymysql.err.IntegrityError:
+    		m = """
+    			You already have a group named {}.
+    			""".format(group_name)
+    		flash(m, "danger")
+
     return redirect(url_for('friends'))
 
 @app.route('/memberadd', methods=['POST'])
