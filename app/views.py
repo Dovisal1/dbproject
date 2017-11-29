@@ -495,15 +495,15 @@ def groupadd():
     	VALUES (%s, %s, %s)
     	"""
 
-    with conn.cursor() as cursor:
-    	try:
+    try:
+    	with conn.cursor() as cursor:
     		cursor.execute(q, (group_name, uname, desc))
-    		conn.commit()
-    	except pymysql.err.IntegrityError:
-    		m = """
-    			You already have a group named {}.
-    			""".format(group_name)
-    		flash(m, "danger")
+    	conn.commit()
+    except pymysql.err.IntegrityError:
+    	m = """
+    		You already have a group named {}.
+    		""".format(group_name)
+    	flash(m, "danger")
 
     return redirect(url_for('friends'))
 

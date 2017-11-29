@@ -123,6 +123,12 @@ Friends
 
 <div class="col-md-5">
 
+{% if tags_pending or tags_proposed %}
+	<div class="page-header">
+		<h2>Tags</h2>
+	</div>
+{% endif %}
+
 {% if tags_pending %}
 	<div class="panel panel-default">
 		<div class="panel-heading">
