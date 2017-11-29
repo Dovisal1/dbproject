@@ -159,7 +159,7 @@ def home():
 
     if not searchQuery:
         q =  'SELECT id, file_path, content_name, timest,\
-        		username, first_name, last_name\
+        		username, first_name, last_name, public\
               FROM Content NATURAL JOIN Person\
               WHERE username = %s\
               OR public\
