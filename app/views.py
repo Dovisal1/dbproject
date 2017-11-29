@@ -472,12 +472,8 @@ def groupadd():
     cursor = conn.cursor()
     cursor.execute(v, group_name)
     res = cursor.fetchall()
-    if (res[0]['group_name']==group_name):
-        e = """
-            Group Already Exists.
-            """
-        flash(e, "danger")
-    else:
+    print (res)
+    if not res:
         q = """
             INSERT INTO FriendGroup(group_name, username, description)
             VALUES (%s, %s, %s)
@@ -485,6 +481,11 @@ def groupadd():
         cursor = conn.cursor()
         cursor.execute(q, (group_name, uname, desc))
         conn.commit()
+    elif (res[0]['group_name']==group_name):
+        e = """
+            Group Already Exists.
+            """
+        flash(e, "danger")
     cursor.close()
     return redirect(url_for('friends'))
 

@@ -109,7 +109,7 @@
         <div style="padding-bottom: 5pt;" class="container-fluid">
             <span class="text-info">{{c.first_name}} {{c.last_name}}</span> &nbsp;
             <div class="pull-right">
-                {% if username == c.username %}
+                {% if (username == c.username or username == line.username) %}
                 <a href="/commentdel?username={{c.username}}&id={{line.id}}&ts={{c.timest}}" title="Remove this" class="close">&times;</a> {% endif %}
             </div>
             <small>{{c.timest|time_ago}}</small>
