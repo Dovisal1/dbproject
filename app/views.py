@@ -131,27 +131,6 @@ def registerAuth():
     session['username'] = username
     return redirect(url_for('home'))
 
-# def retrieveData():
-#     username = session['username']
-#     cursor = conn.cursor();
-#     query = 'SELECT timest, content_name, file_path FROM Content WHERE username = %s ORDER BY timest DESC'
-#     cursor.execute(query, (username))
-#     data = cursor.fetchall()
-#     query = 'SELECT first_name FROM Person WHERE username = %s'
-#     cursor.execute(query, (username))
-#     data2 = cursor.fetchone()
-#     cursor.close()
-#     return {"username": username, "posts": data, "fname": data2['first_name']}
-
-# #Routes Home Page Once Logged In
-# @app.route('/homeold')
-# @login_required
-# def home():
-#     data = retrieveData()
-#     uname = session['username']
-#     return render_template('home.html', username=uname, posts=data["posts"], fname=get_fname())
-
-
 @app.route('/home')
 @login_required
 def home():
