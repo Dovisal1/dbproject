@@ -75,17 +75,20 @@ def loginAuth():
     #grabs information from the forms
     username = request.form['username']
     password = request.form['password']
-        
-    #cursor used to send queries
-    cursor = conn.cursor()
-    #executes query
-    query = 'SELECT * FROM Person WHERE username = %s and password = %s'
-    cursor.execute(query, (username, hashlib.md5(password.encode('utf-8')).hexdigest()))
-    #stores the results in a variable
+    hash = hashlib.md5(password.encode('utf-8')).hexdigest()
+
+    q = """
+        SELECT *
+        FROM Person
+        WHERE username = %s
+        AND password = %s
+        """
+
+    with conn.cursor() as cursor:
+        cursor.executes(q, (username, hash))
+
     data = cursor.fetchone()
-    #use fetchall() if you are expecting more than 1 data row
-    cursor.close()
-    error = None
+
     if(data):
         #creates a session for the the user
         #session is a built in
