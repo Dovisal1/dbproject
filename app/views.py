@@ -218,22 +218,31 @@ def logout():
 @login_required
 def post():
     uname = session['username']
-    cursor = conn.cursor();
+
     cname = request.form['name']
     photo = request.files['file']
     is_public = 1 if request.form.get('public') == "public" else 0
+
     if photo:
         filename = secure_filename(photo.filename)
         os.chmod(app.config["PHOTO_DIRECTORY"], 0o775)
         newfilename = uuid.uuid4().hex
         photo.save(os.path.join(app.config["PHOTO_DIRECTORY"], newfilename))
-        q = 'INSERT INTO Content(content_name, file_path, username, public) VALUES(%s, %s, %s, %s)'
-        cursor.execute(q, (cname, newfilename, uname, int(is_public)))
+        q = """
+            INSERT INTO Content(content_name, file_path, username, public)
+            VALUES(%s, %s, %s, %s)
+            """
+        with conn.cursor as cursor:
+            cursor.execute(q, (cname, newfilename, uname, int(is_public)))
     else:
-        q = 'INSERT INTO Content(content_name, username, public) VALUES (%s, %s, %s)'
-        cursor.execute(q, (cname, uname, is_public))
+        q = """
+            INSERT INTO Content(content_name, username, public)
+            VALUES (%s, %s, %s)
+            """
+        with conn.cursor() as cursor:
+            cursor.execute(q, (cname, uname, is_public))
+
     conn.commit()
-    cursor.close()
     return redirect(url_for('home'))
 
 
@@ -286,11 +295,19 @@ def postdel():
 def retrieve_file(filename):
     if not authenticated():
         abort(404)
+
     uname = session['username']
-    cursor = conn.cursor()
-    q = "SELECT file_path FROM Content WHERE username = %s AND file_path = %s"
-    cursor.execute(q, (uname, filename))
-    res = cursor.fetchone()
+
+    q = """
+        SELECT file_path
+        FROM Content
+        WHERE username = %s
+        AND file_path = %s
+        """
+    with conn.cursor() as cursor:
+        cursor.execute(q, (uname, filename))
+        res = cursor.fetchone()
+
     if res:
         return send_from_directory(app.config['PHOTO_DIRECTORY'], filename)
     else:
@@ -299,19 +316,23 @@ def retrieve_file(filename):
 @app.route('/comment', methods=['POST'])
 @login_required
 def comment():
-	uname = session['username']
-	id = request.form['id']
-	comment_text = request.form['comment']
+    uname = session['username']
+    id = request.form['id']
+    comment_text = request.form['comment']
 
-	if comment_text == '':
-		return redirect(url_for('home'))
+    if comment_text == '':
+        return redirect(url_for('home'))
 
-	q = 'INSERT INTO Comment(id, username, comment_text) VALUES (%s, %s, %s)'
-	cursor = conn.cursor()
-	cursor.execute(q, (id, uname, comment_text))
-	conn.commit()
-	cursor.close()
-	return redirect(url_for('home'))
+    q = """
+        INSERT INTO Comment(id, username, comment_text)
+        VALUES (%s, %s, %s)
+        """
+
+    with conn.cursor() as cursor:
+        cursor.execute(q, (id, uname, comment_text))
+
+    conn.commit()
+    return redirect(url_for('home'))
 
 @app.route('/commentdel', methods=['GET'])
 @login_required
