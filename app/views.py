@@ -135,34 +135,15 @@ def registerAuth():
 @login_required
 def home():
     uname = session['username']
-    cursor = conn.cursor()
-
     searchQuery = request.args.get('q')
 
-    if not searchQuery:
-        q =  """
-            SELECT id, file_path, content_name, timest,
-                username, first_name, last_name, public
-            FROM Content NATURAL JOIN Person
-            WHERE username = %s
-            OR public
-            OR id in (
-                SELECT id
-                FROM Share JOIN Member ON
-                Share.username = Member.username_creator
-                    AND Share.group_name = Member.group_name
-                WHERE Member.username = %s
-                )
-            ORDER BY timest DESC
-            """
-        cursor.execute(q, (uname, uname))
-    else:
-        q = """
-            SELECT id, file_path, content_name, timest,
-                username, first_name, last_name
-            FROM Content NATURAL JOIN Person
-            WHERE (
-                username = %s
+    with conn.cursor() as cursor:
+        if not searchQuery:
+            q =  """
+                SELECT id, file_path, content_name, timest,
+                    username, first_name, last_name, public
+                FROM Content NATURAL JOIN Person
+                WHERE username = %s
                 OR public
                 OR id in (
                     SELECT id
@@ -171,40 +152,57 @@ def home():
                         AND Share.group_name = Member.group_name
                     WHERE Member.username = %s
                     )
-                )
-            AND (
-                content_name like %s
-                OR username like %s
-                )
+                ORDER BY timest DESC
+                """
+            cursor.execute(q, (uname, uname))
+        else:
+            q = """
+                SELECT id, file_path, content_name, timest,
+                    username, first_name, last_name
+                FROM Content NATURAL JOIN Person
+                WHERE (
+                    username = %s
+                    OR public
+                    OR id in (
+                        SELECT id
+                        FROM Share JOIN Member ON
+                        Share.username = Member.username_creator
+                            AND Share.group_name = Member.group_name
+                        WHERE Member.username = %s
+                        )
+                    )
+                AND (
+                    content_name like %s
+                    OR username like %s
+                    )
+                ORDER BY timest DESC
+                """
+            cursor.execute(q, (uname, uname, searchQuery, searchQuery))
+
+        posts = cursor.fetchall()
+
+        q1 = """
+            SELECT username, first_name, last_name, timest, comment_text
+            FROM Comment NATURAL JOIN Person
+            WHERE id = %s
             ORDER BY timest DESC
             """
-        cursor.execute(q, (uname, uname, searchQuery, searchQuery))
 
-    posts = cursor.fetchall()
+        q2 = """
+            SELECT first_name, last_name
+            FROM Tag JOIN Person ON
+                Tag.username_taggee = Person.username
+            WHERE id = %s AND status = true
+            ORDER BY timest DESC
+            """
 
-    q1 = """
-        SELECT username, first_name, last_name, timest, comment_text
-        FROM Comment NATURAL JOIN Person
-        WHERE id = %s
-        ORDER BY timest DESC
-        """
+        for p in posts:
+        	cursor.execute(q1, (p['id']))
+        	p['comments'] = cursor.fetchall()
 
-    q2 = """
-        SELECT first_name, last_name
-        FROM Tag JOIN Person ON
-            Tag.username_taggee = Person.username
-        WHERE id = %s AND status = true
-        ORDER BY timest DESC
-        """
+        	cursor.execute(q2, (p['id']))
+        	p['tags'] = cursor.fetchall()
 
-    for p in posts:
-    	cursor.execute(q1, (p['id']))
-    	p['comments'] = cursor.fetchall()
-
-    	cursor.execute(q2, (p['id']))
-    	p['tags'] = cursor.fetchall()
-
-    cursor.close()
     return render_template('home.html', username=uname, posts=posts, fname=get_fname())
 
 
