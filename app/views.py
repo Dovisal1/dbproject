@@ -255,24 +255,39 @@ def postdel():
     id = request.args.get('id')
 
     # get content owner
-    q = 'SELECT username\
-		 FROM Content\
-		 WHERE id = %s'
-    
-    cursor = conn.cursor()
-    cursor.execute(q, (id))
-    item_owner = cursor.fetchone()['username']
-    
-    if uname != item_owner and uname != commenter:
-        return redirect(url_for('home'))
+    q = """
+    	SELECT username
+    	FROM Content
+    	WHERE id = %s
+    	"""
 
-    q = 'DELETE FROM Content\
-		 WHERE id = %s\
-		 AND username = %s'
+    try:
+    	with conn.cursor() as cursor:
+    		cursor.execute(q, (id))
 
-    cursor.execute(q, (id, uname))
-    conn.commit()
-    cursor.close()
+    	item_owner = cursor.fetchone()['username']
+
+    	if uname != item_owner:
+    		"""
+    		This should not happen if the user is using the UI
+    		since we only give users the option to delete their
+    		own content. So no nice error message is required.
+    		"""
+    		# exit with Forbidden error
+    		abort(403)
+
+    	q = """
+    		DELETE FROM Content
+    		WHERE id = %s
+    		"""
+
+    	with conn.cursor() as cursor:
+    		cursor.execute(q, (id))
+
+    	conn.commit()
+    except pymysql.err.IntegrityError:
+    	flash('Database Error', 'danger')
+
     return redirect(url_for('home'))
 
 # Retrieve user photos only if logged in
