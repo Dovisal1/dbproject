@@ -85,7 +85,7 @@ def loginAuth():
         """
 
     with conn.cursor() as cursor:
-        cursor.executes(q, (username, hash))
+        cursor.execute(q, (username, hash))
 
     data = cursor.fetchone()
 
@@ -180,7 +180,7 @@ def home():
             """
         cursor.execute(q, (uname, uname, searchQuery, searchQuery))
 
-    data = cursor.fetchall()
+    posts = cursor.fetchall()
 
     q1 = """
         SELECT username, first_name, last_name, timest, comment_text
@@ -197,15 +197,15 @@ def home():
         ORDER BY timest DESC
         """
 
-    for d in data:
-    	cursor.execute(q1, (d['id']))
-    	d['comments'] = cursor.fetchall()
+    for p in posts:
+    	cursor.execute(q1, (p['id']))
+    	p['comments'] = cursor.fetchall()
 
-    	cursor.execute(q2, (d['id']))
-    	d['tags'] = cursor.fetchall()
+    	cursor.execute(q2, (p['id']))
+    	p['tags'] = cursor.fetchall()
 
     cursor.close()
-    return render_template('home.html', username=uname, posts=data, fname=get_fname())
+    return render_template('home.html', username=uname, posts=posts, fname=get_fname())
 
 
 #Logging out
