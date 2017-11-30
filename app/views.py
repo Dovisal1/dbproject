@@ -106,31 +106,30 @@ def registerAuth():
     username = request.form['username']
     password = request.form['password']
     passconf = request.form['pass-conf']
+
     if password != passconf:
         error = "Passwords do not match."
         return render_template('register.html', error=error)
+
     fname = request.form['fname']
     lname = request.form['lname']
-    #cursor used to send queries
-    cursor = conn.cursor()
-    #executes query
-    query = 'SELECT * FROM Person WHERE username = %s'
-    cursor.execute(query, (username))
-    #stores the results in a variable
-    data = cursor.fetchone()
-    #use fetchall() if you are expecting more than 1 data row
-    error = None
-    if(data):
-        #If the previous query returns data, then user exists
-        error = username + " is taken. Try another."
-        return render_template('register.html', error = error)
-    else:
-        ins = 'INSERT INTO Person (username, password, first_name, last_name) VALUES(%s, %s, %s, %s)'
-        cursor.execute(ins, (username, hashlib.md5(password.encode('utf-8')).hexdigest(), fname, lname))
-        conn.commit()
-        cursor.close()
-        session['username'] = username
-        return redirect(url_for('home'))
+    hash = hashlib.md5(password.encode('utf-8')).hexdigest()
+    
+    q = """
+        INSERT INTO Person(username, password, first_name, last_name)
+        VALUES (%s, %s, %s, %s)
+        """
+
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(q, (username, hash, fname, lname))
+            conn.commit()
+    except pymysql.err.IntegrityError:
+        error = "{} is already taken. Try another".format(username)
+        return render_template('register.html', error=error)
+    
+    session['username'] = username
+    return redirect(url_for('home'))
 
 # def retrieveData():
 #     username = session['username']
