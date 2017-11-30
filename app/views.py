@@ -140,36 +140,44 @@ def home():
     searchQuery = request.args.get('q')
 
     if not searchQuery:
-        q =  'SELECT id, file_path, content_name, timest,\
-        		username, first_name, last_name, public\
-              FROM Content NATURAL JOIN Person\
-              WHERE username = %s\
-              OR public\
-              OR id in\
-              	(SELECT id\
-              	 FROM Share JOIN Member ON\
-              	 	Share.username = Member.username_creator\
-              	 	AND Share.group_name = Member.group_name\
-              	 WHERE Member.username = %s)\
-              ORDER BY timest DESC'
+        q =  """
+            SELECT id, file_path, content_name, timest,
+                username, first_name, last_name, public
+            FROM Content NATURAL JOIN Person
+            WHERE username = %s
+            OR public
+            OR id in (
+                SELECT id
+                FROM Share JOIN Member ON
+                Share.username = Member.username_creator
+                    AND Share.group_name = Member.group_name
+                WHERE Member.username = %s
+                )
+            ORDER BY timest DESC
+            """
         cursor.execute(q, (uname, uname))
     else:
-        q =  'SELECT id, file_path, content_name, timest,\
-            username, first_name, last_name\
-          FROM Content NATURAL JOIN Person\
-          WHERE (username = %s\
-          OR public\
-          OR id in\
-            (SELECT id\
-             FROM Share JOIN Member ON\
-                Share.username = Member.username_creator\
-                AND Share.group_name = Member.group_name\
-             WHERE Member.username = %s)\
-            )\
-          AND (\
-               content_name like %s\
-            OR username like %s)\
-          ORDER BY timest DESC'
+        q = """
+            SELECT id, file_path, content_name, timest,
+                username, first_name, last_name
+            FROM Content NATURAL JOIN Person
+            WHERE (
+                username = %s
+                OR public
+                OR id in (
+                    SELECT id
+                    FROM Share JOIN Member ON
+                    Share.username = Member.username_creator
+                        AND Share.group_name = Member.group_name
+                    WHERE Member.username = %s
+                    )
+                )
+            AND (
+                content_name like %s
+                OR username like %s
+                )
+            ORDER BY timest DESC
+            """
         cursor.execute(q, (uname, uname, searchQuery, searchQuery))
 
     data = cursor.fetchall()
