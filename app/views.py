@@ -245,6 +245,36 @@ def post():
     cursor.close()
     return redirect(url_for('home'))
 
+
+@app.route('/postdel', methods=['GET'])
+@login_required
+def postdel():
+    uname = session['username']
+
+    #extract params
+    id = request.args.get('id')
+
+    # get content owner
+    q = 'SELECT username\
+		 FROM Content\
+		 WHERE id = %s'
+    
+    cursor = conn.cursor()
+    cursor.execute(q, (id))
+    item_owner = cursor.fetchone()['username']
+    
+    if uname != item_owner and uname != commenter:
+        return redirect(url_for('home'))
+
+    q = 'DELETE FROM Content\
+		 WHERE id = %s\
+		 AND username = %s'
+
+    cursor.execute(q, (id, uname))
+    conn.commit()
+    cursor.close()
+    return redirect(url_for('home'))
+
 # Retrieve user photos only if logged in
 @app.route('/content/<path:filename>')
 def retrieve_file(filename):
