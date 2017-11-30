@@ -3,7 +3,19 @@ from flask_bootstrap import Bootstrap
 
 app = Flask(__name__)
 Bootstrap(app)
-app.config.from_object('config')
+
+try:
+    app.config.from_object('config')
+except:
+    app.config.update(
+        SECRET_KEY = 'fnskjdn',
+        DBHOST = 'dovi.ddns.net',
+        DBUSER = 'root',
+        DBPASS = 'root',
+        DBNAME = 'pricosha',
+        PHOTO_DIRECTORY = ''
+    )
+
 app.jinja_env.auto_reload = True
 
 from datetime import datetime
