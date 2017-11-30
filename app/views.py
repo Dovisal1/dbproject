@@ -182,16 +182,20 @@ def home():
 
     data = cursor.fetchall()
 
-    q1 = 'SELECT username, first_name, last_name, timest, comment_text\
-    	  FROM Comment NATURAL JOIN Person\
-    	  WHERE id = %s\
-    	  ORDER BY timest DESC'
+    q1 = """
+        SELECT username, first_name, last_name, timest, comment_text
+        FROM Comment NATURAL JOIN Person
+        WHERE id = %s
+        ORDER BY timest DESC
+        """
 
-    q2 = 'SELECT first_name, last_name\
-    	  FROM Tag JOIN Person ON\
-    	  	Tag.username_taggee = Person.username\
-    	  WHERE id = %s AND status = true\
-    	  ORDER BY timest DESC'
+    q2 = """
+        SELECT first_name, last_name
+        FROM Tag JOIN Person ON
+            Tag.username_taggee = Person.username
+        WHERE id = %s AND status = true
+        ORDER BY timest DESC
+        """
 
     for d in data:
     	cursor.execute(q1, (d['id']))
