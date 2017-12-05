@@ -12,30 +12,59 @@
 {% endblock %} {% block page_content %}
 
 
-{% with error = get_flashed_messages() %} {% for e in error %}
-<div class="alert alert-danger fade in">
-    <a href='#' class="close" data-dismiss="alert" aria-label="close">&times;</a>
-    <strong>Error:</strong> {{e}}
+{% with error = get_flashed_messages(with_categories=true) %} {% for c, e in error %}
+<div class="alert alert-{{c}} alert-dismissable fade in">
+    <a href='#' class="close" data-dismiss="alert" aria-label="close">&times;</a> {{e}}
 </div>
- 
 {% endfor %} {% endwith %} {% if posts %} {% for line in posts %}
 <div class="panel panel-default" id="{{line.id}}">
     <div class="panel-heading">
         <span class="text-primary">{{line.first_name}} {{line.last_name}}</span>
         <span class="text-muted">&#9658;</span> {{line.content_name}}
         <div class="pull-right">
-            <small>{{line.timest|time_ago}}</small>
+            {% if line.public == 1 %}
+            <span class="glyphicon glyphicon-eye-open"></span> {% else %}
+            <span class="glyphicon glyphicon-eye-close"></span> {% endif %}
+            <small>{{line.timest|time_ago}}&nbsp;</small> {% if (username == line.username) %}
+            <a href="/postdel?username={{line.username}}&id={{line.id}}" title="Delete post" class="close deletePost">&times;</a> {% endif %}
         </div>
     </div>
     <div class="panel-body">
-        <a href="#modal{{line.id}}" data-target="#modal{{line.id}}" data-toggle="modal">
+        <a href="#col{{line.id}}" data-toggle="collapse">
             <img src="/content/{{line.file_path}}" alt="{{line.content_name}}" class="img-responsive img-rounded">
         </a>
         {% for t in line.tags %}
         <span style="padding: 4pt; display: inline-block; margin-top: 5pt;" class="label label-default">
-			<span class="glyphicon glyphicon-tag"></span> {{t.first_name}} {{t.last_name}}
+            <span class="glyphicon glyphicon-tag"></span> {{t.first_name}} {{t.last_name}}
         </span>
         {% endfor %}
+        <div id="col{{line.id}}" class="collapse">
+            <hr>
+            <form class="form-inline" style="padding-top:0pt;padding-bottom:0pt;" action="/tag" method="POST">
+                <div class="form-group">
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="taggee" placeholder="Tag a friend!" required>
+                        <input type="hidden" class="form-control" name="id" value="{{line.id}}">
+                        <label class="input-group-btn">
+                            <button type="submit" class="btn btn-default">
+                                Tag
+                            </button>
+                        </label>
+                    </div>
+                </div>
+            </form>
+            <hr>
+            <form class="form-inline" style="padding-top:10px;padding-bottom:0pt;" action="/share" method="POST">
+                <div class="form-group">
+                    <input type="text" class="form-control" name="group_name" placeholder="Group name" required/>
+                    <input type="text" class="form-control" name="owner" placeholder="Username" />
+                    <input type="hidden" class="form-control" name="id" value="{{line.id}}" />
+                    <button type="submit" class="btn btn-default">
+                        Share
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
     <div class="panel-footer">
         {% if line.comments %}
@@ -49,8 +78,8 @@
                     <input type="text" class="form-control" name="comment" placeholder="Make a comment!">
                     <input type="hidden" class="form-control" name="id" value="{{line.id}}">
                     <label class="input-group-btn">
-					<button type="submit" class="btn btn-default">Comment</button>
-				</label>
+                    <button type="submit" class="btn btn-default">Comment</button>
+                </label>
                 </div>
             </div>
         </form>
@@ -58,7 +87,7 @@
         <div style="padding-bottom: 5pt;" class="container-fluid">
             <span class="text-info">{{c.first_name}} {{c.last_name}}</span> &nbsp;
             <div class="pull-right">
-                {% if username == c.username %}
+                {% if (username == c.username or username == line.username) %}
                 <a href="/commentdel?username={{c.username}}&id={{line.id}}&ts={{c.timest}}" title="Remove this" class="close">&times;</a> {% endif %}
             </div>
             <small>{{c.timest|time_ago}}</small>
@@ -68,60 +97,4 @@
     </div>
 </div>
 
-<div id="modal{{line.id}}" class="modal fade" role="dialog">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span class="text-primary">
-					{{line.first_name}} {{line.last_name}}
-				</span>
-                <span class="text-muted">&#9658;</span> {{line.content_name}}
-                <button type="button" class="close" data-dismiss="modal">
-					&times;
-				</button>
-            </div>
-            <div class="modal-body">
-                <form class="form" action="/tag" method="POST">
-                    <div class="form-group">
-                        <div class="input-group">
-                            <input type="text" class="form-control" name="taggee" placeholder="Tag a friend!">
-                            <input type="hidden" class="form-control" name="id" value="{{line.id}}">
-                            <label class="input-group-btn">
-								<button type="submit" class="btn btn-default">
-									Tag
-								</button>
-							</label>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">
-        			Close
-        		</button>
-            </div>
-        </div>
-    </div>
-</div>
-{% endfor %} {% endif %} {% endblock %} {% block bscripts %}
-<script>
-    $(document).on('change', ':file', function() {
-        var input = $(this),
-            numFiles = input.get(0).files ? input.get(0).files.length : 1,
-            label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
-        input.trigger('fileselect', [numFiles, label]);
-    });
-
-    $(document).ready(function() {
-        $(':file').on('fileselect', function(event, numFiles, label) {
-
-            var input = $(this).parents('.input-group').find(':text'),
-                log = numFiles > 1 ? numFiles + ' files selected' : label;
-
-            if (input.length) {
-                input.val(log);
-            }
-        });
-    });
-</script>
-{% endblock %}
+{% endfor %} {% endif %} {% endblock %}
