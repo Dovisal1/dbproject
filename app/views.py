@@ -659,6 +659,77 @@ def memberaddu():
         
     return redirect(url_for('friends'))
 
+@app.route('/memberdel')
+@login_required
+def memberdel():
+    uname = session['username']
+    member = request.args.get('member')
+    group = request.args.get('group')
+
+    if not member or not group:
+        abort(403)
+
+    # check which tags need to be deleted
+
+    # Get all Tags that are on items shared by this group
+    # that are not public or shared by another group
+    q1 = """
+        SELECT id, username_tagger, username_taggee
+        FROM Tag AS t
+        WHERE username_taggee = %s
+        AND id in (
+            SELECT id
+            FROM Content
+            WHERE NOT public
+        )
+        AND id in (
+            SELECT id
+            FROM Share
+            WHERE id = t.id
+            AND group_name = %s
+            AND username = %s
+        )
+        AND id not in (
+            SELECT id
+            FROM Share JOIN Member ON
+            Share.username = Member.username_creator
+                AND Share.group_name = Member.group_name
+            WHERE Member.username = %s
+            AND Member.group_name != %s
+            AND Member.username_creator != %s
+        )
+        """
+
+    q2 = """
+        DELETE FROM Tag
+        WHERE id = %s
+        AND username_taggee = %s
+        AND username_tagger = %s
+        """
+
+    q3 = """
+        DELETE FROM Member
+        WHERE username = %s
+        AND group_name = %s
+        AND username_creator = %s
+        """
+
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(q1, (member, group, uname, member, group, uname))
+            tagsdel = cursor.fetchall()
+
+            for t in tagsdel:
+                cursor.execute(q2, (t['id'], t['username_taggee'], t['username_tagger']))
+
+            cursor.execute(q3, (member, group, uname))
+
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        flash(str(e), "danger")
+
+    return redirect(url_for('friends'))
 
 @app.route('/share', methods=['POST'])
 @login_required
