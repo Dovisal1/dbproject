@@ -463,14 +463,15 @@ def tag():
     taggee = request.form['taggee']
     id = request.form['id']
 
-    cursor = conn.cursor()
+
     q = """
         INSERT INTO Tag(username_tagger, username_taggee, id, status)
         VALUES (%s, %s, %s, %s)
         """
 
     if uname == taggee:
-        cursor.execute(q, (uname, uname, id, 1))
+        with conn.cursor() as cursor:
+            cursor.execute(q, (uname, uname, id, 1))
         conn.commit()
     else:
         #verify the taggee is valid
@@ -489,11 +490,13 @@ def tag():
                 )
             )
             """
-        cursor.execute(v, (id, taggee))
-        res = cursor.fetchone()
+        with conn.cursor() as cursor:
+            cursor.execute(v, (id, taggee))
+            res = cursor.fetchone()
 
         if res:
-            cursor.execute(q, (uname, taggee, id, 0))
+            with conn.cursor() as cursor:
+                cursor.execute(q, (uname, taggee, id, 0))
             conn.commit()
         else:
             e = """
@@ -501,7 +504,7 @@ def tag():
                 """.format(taggee)
             flash(e, "danger")
 
-    cursor.close()
+
     return redirect(url_for('home'))
 
 
@@ -517,7 +520,6 @@ def tagaccept():
     if uname != taggee:
         return redirect(url_for('friends'))
 
-    cursor = conn.cursor()
     q = """
         UPDATE Tag
         SET status = true
@@ -525,9 +527,9 @@ def tagaccept():
         AND username_tagger = %s
         AND username_taggee = %s
         """
-    cursor.execute(q, (id, tagger, taggee))
+    with conn.cursor() as cursor:
+        cursor.execute(q, (id, tagger, taggee))
     conn.commit()
-    cursor.close()
     return redirect(url_for('friends'))
 
 @app.route('/tagdecline')
@@ -542,16 +544,15 @@ def tagdecline():
     if uname != taggee:
         return redirect(url_for('friends'))
 
-    cursor = conn.cursor()
     q = """
         DELETE FROM Tag
         WHERE id = %s
         AND username_tagger = %s
         AND username_taggee = %s
         """
-    cursor.execute(q, (id, tagger, taggee))
+    with conn.cursor() as cursor:
+        cursor.execute(q, (id, tagger, taggee))
     conn.commit()
-    cursor.close()
     return redirect(url_for('friends'))
 
 @app.route('/groupadd', methods=['POST'])
@@ -594,9 +595,9 @@ def memberadd():
         AND last_name = %s
         """
 
-    cursor = conn.cursor()
-    cursor.execute(q, (fname, lname))
-    res = cursor.fetchall()
+    with conn.cursor() as cursor:
+        cursor.execute(q, (fname, lname))
+        res = cursor.fetchall()
     
     if len(res) == 0:
         m = """
@@ -623,7 +624,8 @@ def memberadd():
             VALUES (%s, %s, %s)
             """
         try:
-            cursor.execute(q, (member, group_name, uname))
+            with conn.cursor() as cursor:
+                cursor.execute(q, (member, group_name, uname))
             conn.commit()
             m = "{} successfully add to {}".format(member, group_name)
             flash(m, "success")
@@ -631,7 +633,6 @@ def memberadd():
             m = "{} is already in {}.".format(member, group_name)
             flash(m, "warning")
         
-    cursor.close()
     return redirect(url_for('friends'))
 
 @app.route('/memberaddu', methods=['POST'])
@@ -714,10 +715,10 @@ def search():
                content_name like "\%%s%"\
             OR username like "\%%s%")\
           ORDER BY timest DESC'
-
-    cursor.execute(q, (searchQuery))
-    data = cursor.all()
-    cursor.close()
+    
+    with conn.cursor() as cursor:
+        cursor.execute(q, (searchQuery))
+        data = cursor.all()
     return render_template("home.html", username=username, posts=data, fname=get_fname())
 
 
@@ -728,7 +729,7 @@ def addFavorite():
     id = request.form['id']
 
     q = """
-        INSERT INTO Favorites(id, username)
+        INSERT INTO Favorite(id, username)
         VALUES (%s, %s)
         """
 
@@ -746,8 +747,8 @@ def favorites():
     q = """ 
             SELECT Content.id, file_path, content_name, timest,\
             Content.username, first_name, last_name\
-            FROM Person NATURAL JOIN Content JOIN Favorites ON (Content.id = Favorites.id) \
-            WHERE Favorites.username = %s\
+            FROM Person NATURAL JOIN Content JOIN Favorite ON (Content.id = Favorite.id) \
+            WHERE Favorite.username = %s\
            ORDER BY timest DESC\
         """
     with conn.cursor() as cursor:
