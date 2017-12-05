@@ -281,11 +281,24 @@ def postdel():
             WHERE id = %s
             """
 
+        q1 = """
+            DELETE FROM Tag
+            WHERE id = %s
+            """
+        
+        q2 = """
+            DELETE FROM Favorites
+            WHERE id = %s
+            """
+
         with conn.cursor() as cursor:
+            cursor.execute(q1, (id))
+            cursor.execute(q2, (id))
             cursor.execute(q, (id))
 
         conn.commit()
-    except pymysql.err.IntegrityError:
+    except pymysql.err.IntegrityError as e:
+        print(e)
         flash('Database Error', 'danger')
 
     return redirect(url_for('home'))
