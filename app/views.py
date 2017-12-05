@@ -743,7 +743,6 @@ def addFavorite():
 @login_required
 def favorites():
     username = session['username']
-    cursor = conn.cursor()
     q = """ 
             SELECT Content.id, file_path, content_name, timest,\
             Content.username, first_name, last_name\
@@ -751,9 +750,9 @@ def favorites():
             WHERE Favorites.username = %s\
            ORDER BY timest DESC\
         """
-
-    cursor.execute(q, (username))
-    data = cursor.fetchall()
+    with conn.cursor() as cursor:
+        cursor.execute(q, (username))
+        data = cursor.fetchall()
     
     q2 = 'SELECT username, first_name, last_name, timest, comment_text\
     FROM Comment NATURAL JOIN Person\
@@ -767,13 +766,12 @@ def favorites():
     ORDER BY timest DESC'
     
     for d in data:
-        cursor.execute(q2, (d["id"]))
-        d['comments'] = cursor.fetchall()
-        
-        cursor.execute(q3, (d["id"]))
-        d['tags'] = cursor.fetchall()
+        with conn.cursor() as cursor:
+            cursor.execute(q2, (d["id"]))
+            d['comments'] = cursor.fetchall()
+        with conn.cursor() as cursor:
+            cursor.execute(q3, (d["id"]))
+            d['tags'] = cursor.fetchall()
 
-
-    cursor.close()
     return render_template("favorites.html", username=username, posts=data, fname=get_fname())
 
