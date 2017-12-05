@@ -719,3 +719,43 @@ def search():
     data = cursor.all()
     cursor.close()
     return render_template("home.html", username=username, posts=data, fname=get_fname())
+  
+#Favorites
+@app.route('/favorites')
+@login_required
+def favorites():
+    username = session['username']
+    cursor = conn.cursor()
+    q = """ 
+            SELECT Content.id, file_path, content_name, timest,\
+            Content.username, first_name, last_name\
+            FROM Person NATURAL JOIN Content JOIN Favorites ON (Content.id = Favorites.id) \
+            WHERE Favorites.username = %s\
+           ORDER BY timest DESC\
+        """
+
+    cursor.execute(q, (username))
+    data = cursor.fetchall()
+    
+    q2 = 'SELECT username, first_name, last_name, timest, comment_text\
+    FROM Comment NATURAL JOIN Person\
+    WHERE id = %s\
+    ORDER BY timest DESC'
+    
+    q3 = 'SELECT first_name, last_name\
+    FROM Tag JOIN Person ON\
+    Tag.username_taggee = Person.username\
+    WHERE id = %s AND status = true\
+    ORDER BY timest DESC'
+    
+    for d in data:
+        cursor.execute(q2, (d["id"]))
+        d['comments'] = cursor.fetchall()
+        
+        cursor.execute(q3, (d["id"]))
+        d['tags'] = cursor.fetchall()
+
+
+    cursor.close()
+    return render_template("favorites.html", username=username, posts=data, fname=get_fname())
+
