@@ -41,8 +41,8 @@ def get_fname():
     q = 'SELECT first_name FROM Person WHERE username = %s'
 
     with conn.cursor() as cursor:
-    	cursor.execute(q, (uname))
-    	result = cursor.fetchone()
+        cursor.execute(q, (uname))
+        result = cursor.fetchone()
     
     session['first_name'] = result['first_name']
     return session['first_name']
@@ -197,11 +197,11 @@ def home():
             """
 
         for p in posts:
-        	cursor.execute(q1, (p['id']))
-        	p['comments'] = cursor.fetchall()
+            cursor.execute(q1, (p['id']))
+            p['comments'] = cursor.fetchall()
 
-        	cursor.execute(q2, (p['id']))
-        	p['tags'] = cursor.fetchall()
+            cursor.execute(q2, (p['id']))
+            p['tags'] = cursor.fetchall()
 
     return render_template('home.html', username=uname, posts=posts, fname=get_fname())
 
@@ -256,37 +256,37 @@ def postdel():
 
     # get content owner
     q = """
-    	SELECT username
-    	FROM Content
-    	WHERE id = %s
-    	"""
+        SELECT username
+        FROM Content
+        WHERE id = %s
+        """
 
     try:
-    	with conn.cursor() as cursor:
-    		cursor.execute(q, (id))
+        with conn.cursor() as cursor:
+            cursor.execute(q, (id))
 
-    	item_owner = cursor.fetchone()['username']
+        item_owner = cursor.fetchone()['username']
 
-    	if uname != item_owner:
-    		"""
-    		This should not happen if the user is using the UI
-    		since we only give users the option to delete their
-    		own content. So no nice error message is required.
-    		"""
-    		# exit with Forbidden error
-    		abort(403)
+        if uname != item_owner:
+            """
+            This should not happen if the user is using the UI
+            since we only give users the option to delete their
+            own content. So no nice error message is required.
+            """
+            # exit with Forbidden error
+            abort(403)
 
-    	q = """
-    		DELETE FROM Content
-    		WHERE id = %s
-    		"""
+        q = """
+            DELETE FROM Content
+            WHERE id = %s
+            """
 
-    	with conn.cursor() as cursor:
-    		cursor.execute(q, (id))
+        with conn.cursor() as cursor:
+            cursor.execute(q, (id))
 
-    	conn.commit()
+        conn.commit()
     except pymysql.err.IntegrityError:
-    	flash('Database Error', 'danger')
+        flash('Database Error', 'danger')
 
     return redirect(url_for('home'))
 
@@ -337,33 +337,33 @@ def comment():
 @app.route('/commentdel', methods=['GET'])
 @login_required
 def commentdel():
-	uname = session['username']
+    uname = session['username']
 
-	#extract params
-	id = request.args.get('id')
-	commenter = request.args.get('username')
-	ts = request.args.get('ts')
+    #extract params
+    id = request.args.get('id')
+    commenter = request.args.get('username')
+    ts = request.args.get('ts')
 
-	# get content owner
-	q = 'SELECT username\
-		 FROM Content\
-		 WHERE id = %s'
-	cursor = conn.cursor()
-	cursor.execute(q, (id))
-	item_owner = cursor.fetchone()['username']
+    # get content owner
+    q = 'SELECT username\
+         FROM Content\
+         WHERE id = %s'
+    cursor = conn.cursor()
+    cursor.execute(q, (id))
+    item_owner = cursor.fetchone()['username']
 
-	if uname != item_owner and uname != commenter:
-		return redirect(url_for('home'))
+    if uname != item_owner and uname != commenter:
+        return redirect(url_for('home'))
 
-	q = 'DELETE FROM Comment\
-		 WHERE id = %s\
-		 AND username = %s\
-		 AND timest = %s'
+    q = 'DELETE FROM Comment\
+         WHERE id = %s\
+         AND username = %s\
+         AND timest = %s'
 
-	cursor.execute(q, (id, commenter, ts))
-	conn.commit()
-	cursor.close()
-	return redirect(url_for('home'))
+    cursor.execute(q, (id, commenter, ts))
+    conn.commit()
+    cursor.close()
+    return redirect(url_for('home'))
 
 def fetch_friend_data(uname):
     with conn.cursor() as cursor:
@@ -445,51 +445,51 @@ def friends():
 @app.route('/tag', methods=['POST'])
 @login_required
 def tag():
-	uname = session['username']
+    uname = session['username']
 
-	taggee = request.form['taggee']
-	id = request.form['id']
+    taggee = request.form['taggee']
+    id = request.form['id']
 
-	cursor = conn.cursor()
-	q = """
-		INSERT INTO Tag(username_tagger, username_taggee, id, status)
-		VALUES (%s, %s, %s, %s)
-		"""
+    cursor = conn.cursor()
+    q = """
+        INSERT INTO Tag(username_tagger, username_taggee, id, status)
+        VALUES (%s, %s, %s, %s)
+        """
 
-	if uname == taggee:
-		cursor.execute(q, (uname, uname, id, 1))
-		conn.commit()
-	else:
-		#verify the taggee is valid
-		v = """
-			SELECT id
-			FROM Content
-			WHERE id = %s
-			AND (
-				public
-				OR id IN (
-					SELECT id
-					FROM Share JOIN Member ON
-					Share.username = Member.username_creator
-					AND Share.group_name = Member.group_name
-					Where Member.username = %s
-				)
-			)
-			"""
-		cursor.execute(v, (id, taggee))
-		res = cursor.fetchone()
+    if uname == taggee:
+        cursor.execute(q, (uname, uname, id, 1))
+        conn.commit()
+    else:
+        #verify the taggee is valid
+        v = """
+            SELECT id
+            FROM Content
+            WHERE id = %s
+            AND (
+                public
+                OR id IN (
+                    SELECT id
+                    FROM Share JOIN Member ON
+                    Share.username = Member.username_creator
+                    AND Share.group_name = Member.group_name
+                    Where Member.username = %s
+                )
+            )
+            """
+        cursor.execute(v, (id, taggee))
+        res = cursor.fetchone()
 
-		if res:
-			cursor.execute(q, (uname, taggee, id, 0))
-			conn.commit()
-		else:
-			e = """
-				Not a valid tag. {} cannot view that item.
-				""".format(taggee)
-			flash(e, "danger")
+        if res:
+            cursor.execute(q, (uname, taggee, id, 0))
+            conn.commit()
+        else:
+            e = """
+                Not a valid tag. {} cannot view that item.
+                """.format(taggee)
+            flash(e, "danger")
 
-	cursor.close()
-	return redirect(url_for('home'))
+    cursor.close()
+    return redirect(url_for('home'))
 
 
 @app.route('/tagaccept')
@@ -550,19 +550,19 @@ def groupadd():
     desc = request.form['description']
 
     q = """
-    	INSERT INTO FriendGroup(group_name, username, description)
-    	VALUES (%s, %s, %s)
-    	"""
+        INSERT INTO FriendGroup(group_name, username, description)
+        VALUES (%s, %s, %s)
+        """
 
     try:
-    	with conn.cursor() as cursor:
-    		cursor.execute(q, (group_name, uname, desc))
-    	conn.commit()
+        with conn.cursor() as cursor:
+            cursor.execute(q, (group_name, uname, desc))
+        conn.commit()
     except pymysql.err.IntegrityError:
-    	m = """
-    		You already have a group named {}.
-    		""".format(group_name)
-    	flash(m, "danger")
+        m = """
+            You already have a group named {}.
+            """.format(group_name)
+        flash(m, "danger")
 
     return redirect(url_for('friends'))
 
@@ -606,9 +606,9 @@ def memberadd():
     else:
         member = res[0]['username']
         q = """
-			INSERT INTO Member(username, group_name, username_creator)
-			VALUES (%s, %s, %s)
-			"""
+            INSERT INTO Member(username, group_name, username_creator)
+            VALUES (%s, %s, %s)
+            """
         try:
             cursor.execute(q, (member, group_name, uname))
             conn.commit()
