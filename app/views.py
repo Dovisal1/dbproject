@@ -719,6 +719,24 @@ def search():
     data = cursor.all()
     cursor.close()
     return render_template("home.html", username=username, posts=data, fname=get_fname())
+
+
+@app.route('/favoriteAdd', methods=['POST'])
+@login_required
+def addFavorite():
+    uname = session['username']
+    id = request.form['id']
+
+    q = """
+        INSERT INTO Favorites(id, username)
+        VALUES (%s, %s)
+        """
+
+    with conn.cursor() as cursor:
+        cursor.execute(q, (id, uname))
+
+    conn.commit()
+    return redirect(url_for('home'))
   
 #Favorites
 @app.route('/favorites')
