@@ -185,7 +185,7 @@ def home():
                 SELECT id FROM Favorite
                 WHERE username = %s
                 """
-                
+
         cursor.execute(q1, (uname))
         favorites = cursor.fetchall()
         favoriteIDs = []
@@ -822,7 +822,26 @@ def addFavorite():
 
     conn.commit()
     return redirect(url_for('home'))
-  
+
+
+@app.route('/favoriteDel', methods=['POST'])
+@login_required
+def deleteFavorite():
+    uname = session['username']
+    id = request.form['id']
+
+    q = """
+        DELETE FROM Favorite
+        WHERE id = %s
+        AND username = %s
+        """
+    
+    with conn.cursor() as cursor:
+        cursor.execute(q, (id, uname))
+    
+    conn.commit()
+    return redirect(url_for('home'))
+
 #Favorites
 @app.route('/favorites')
 @login_required
