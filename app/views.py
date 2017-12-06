@@ -232,7 +232,7 @@ def post():
             INSERT INTO Content(content_name, file_path, username, public)
             VALUES(%s, %s, %s, %s)
             """
-        with conn.cursor as cursor:
+        with conn.cursor() as cursor:
             cursor.execute(q, (cname, newfilename, uname, int(is_public)))
     else:
         q = """
