@@ -111,10 +111,13 @@ Friends
 				{% if group.members %}
 				<ul>
 				{% for m in group.members %}
-					<li>
+					<li style="padding-bottom: 3pt;">
 						{{m.first_name}} {{m.last_name}}
 						<div class="pull-right">
-							<a href="/memberdel?member={{m.username}}&group=group.group_name" title="Remove this friend">
+							<a
+							href="/memberdel?member={{m.username}}&group={{group.group_name}}"
+							title="Remove this friend"
+							class="close">
 								&times;
 							</a>
 						</div>
