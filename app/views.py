@@ -69,6 +69,12 @@ def login():
 def register():
     return render_template("register.html", title='Register')
 
+#Routes Settings Page
+@app.route('/settings')
+@app.route('/settings/')
+def settings():
+    return render_template("settings.html", title='Settings', fname=get_fname())
+
 #Authenticates the login
 @app.route('/loginAuth', methods=['GET', 'POST'])
 def loginAuth():
@@ -129,6 +135,36 @@ def registerAuth():
         return render_template('register.html', error=error)
     
     session['username'] = username
+    return redirect(url_for('home'))
+
+#Authenticates the register
+
+
+@app.route('/changeAccountInfo', methods=['GET', 'POST'])
+def changeAccountInfo():
+    uname = session['username']
+    #grabs information from the forms
+    fname = request.form['fname']
+    lname = request.form['lname']
+    password = request.form['password']
+    passconf = request.form['pass-conf']
+
+    if password != passconf:
+        error = "Passwords do not match."
+        return render_template('settings.html', error=error)
+
+    hash = hashlib.md5(password.encode('utf-8')).hexdigest()
+
+    q = """
+        UPDATE Person
+        SET first_name = %s, last_name = %s, password = %s
+        WHERE username = %s
+        """
+
+    with conn.cursor() as cursor:
+        cursor.execute(q, (fname, lname, hash, uname))
+        conn.commit()
+
     return redirect(url_for('home'))
 
 @app.route('/home')
