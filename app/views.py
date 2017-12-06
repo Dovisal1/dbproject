@@ -181,6 +181,10 @@ def home():
 
         posts = cursor.fetchall()
 
+        if searchQuery and len(posts) == 0:
+            e = "No results found!"
+            flash(e, "danger")
+
         q1 = """
                 SELECT id FROM Favorite
                 WHERE username = %s
