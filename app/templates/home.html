@@ -98,23 +98,19 @@
             </form>
             <hr> {% if line.id not in favorites %}
             <form class="form-inline" action="/favoriteAdd" method="POST">
-                <div class="form-group">
-                    <input type="hidden" class="form-control" name="id" value="{{line.id}}" />
-                    <button type="submit" class="btn btn-default btn-sm">
+                {% else %}
+                <form class="form-inline" action="/favoriteDel" method="POST">
+                    {%endif%}
+                    <div class="form-group">
+                        <input type="hidden" class="form-control" name="id" value="{{line.id}}" /> {% if line.id not in favorites %}
+                        <button type="submit" class="btn btn-default btn-sm">
           <span class="glyphicon glyphicon-save"></span> Save
-        </button>
-                </div>
-            </form>
-            {% else %}
-            <form class="form-inline" action="/favoriteDel" method="POST">
-                <div class="form-group">
-                    <input type="hidden" class="form-control" name="id" value="{{line.id}}" />
-                    <button type="submit" class="btn btn-default btn-sm">
+        </button> {% else %}
+                        <button type="submit" class="btn btn-default btn-sm">
           <span class="glyphicon glyphicon-open"></span> Unsave
-        </button>
-                </div>
-            </form>
-            {%endif%}
+        </button> {%endif%}
+                    </div>
+                </form>
         </div>
     </div>
     <div class="panel-footer">
