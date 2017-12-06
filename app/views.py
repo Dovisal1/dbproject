@@ -214,7 +214,7 @@ def home():
             cursor.execute(q2, (p['id']))
             p['tags'] = cursor.fetchall()
 
-    return render_template('home.html', username=uname, posts=posts, favorites=favoriteIDs, fname=get_fname())
+    return render_template('home.html', search=searchQuery, username=uname, posts=posts, favorites=favoriteIDs, fname=get_fname())
 
 
 #Logging out

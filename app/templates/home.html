@@ -9,8 +9,7 @@
         margin: 0 auto;
     }
 </style>
-{% endblock %} {% block page_content %}
-
+{% endblock %} {% block page_content %} {% if not search %}
 <div class="panel panel-default">
     <div class="panel-heading">
         Post a Photo
@@ -43,8 +42,7 @@
         </div>
     </div>
 </div>
-
-{% with error = get_flashed_messages(with_categories=true) %} {% for c, e in error %}
+{%endif%} {% with error = get_flashed_messages(with_categories=true) %} {% for c, e in error %}
 <div class="alert alert-{{c}} alert-dismissable fade in">
     <a href='#' class="close" data-dismiss="alert" aria-label="close">&times;</a> {{e}}
 </div>
