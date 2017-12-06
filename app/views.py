@@ -287,7 +287,7 @@ def postdel():
             """
         
         q2 = """
-            DELETE FROM Favorites
+            DELETE FROM Favorite
             WHERE id = %s
             """
 
