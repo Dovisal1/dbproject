@@ -182,6 +182,17 @@ def home():
         posts = cursor.fetchall()
 
         q1 = """
+                SELECT id FROM Favorite
+                WHERE username = %s
+                """
+                
+        cursor.execute(q1, (uname))
+        favorites = cursor.fetchall()
+        favoriteIDs = []
+        for favorite in favorites:
+            favoriteIDs.append(favorite['id'])
+
+        q1 = """
             SELECT username, first_name, last_name, timest, comment_text
             FROM Comment NATURAL JOIN Person
             WHERE id = %s
@@ -203,7 +214,7 @@ def home():
             cursor.execute(q2, (p['id']))
             p['tags'] = cursor.fetchall()
 
-    return render_template('home.html', username=uname, posts=posts, fname=get_fname())
+    return render_template('home.html', username=uname, posts=posts, favorites=favoriteIDs, fname=get_fname())
 
 
 #Logging out
@@ -846,6 +857,5 @@ def favorites():
         with conn.cursor() as cursor:
             cursor.execute(q3, (d["id"]))
             d['tags'] = cursor.fetchall()
-
     return render_template("favorites.html", username=username, posts=data, fname=get_fname())
 

@@ -96,6 +96,7 @@
 					</button>
                 </div>
             </form>
+            {% if line.id not in favorites %}
             <hr>
             <form class="form-inline" action="/favoriteAdd" method="POST">
                 <div class="form-group">
@@ -105,6 +106,7 @@
         </button>
                 </div>
             </form>
+            {%endif%}
         </div>
     </div>
     <div class="panel-footer">
