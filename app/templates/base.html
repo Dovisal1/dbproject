@@ -4,6 +4,7 @@
 
 <head>
     {% extends "bootstrap/base.html" %} {% block title %} {% block btitle %}{% endblock %} {% endblock %} {% block styles %} {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <style>
         .form-well {
             padding-top: 0px;
