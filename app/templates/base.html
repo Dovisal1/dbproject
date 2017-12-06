@@ -1,23 +1,13 @@
 <!-- Creates Title Along with Links to Each Page in Site -->
 
-{% extends "bootstrap/base.html" %}
-
-{% block title %}
-    {% block btitle %}{% endblock %}
-{% endblock %}
-
-{% block styles %}
-{{ super() }}
+{% extends "bootstrap/base.html" %} {% block title %} {% block btitle %}{% endblock %} {% endblock %} {% block styles %} {{ super() }}
 <style>
     .form-well {
         padding-top: 0px;
     }
 </style>
 
-{% block bstyles %}{% endblock %}
-{% endblock %}
-
-{% block navbar %}
+{% block bstyles %}{% endblock %} {% endblock %} {% block navbar %}
 <nav class="navbar navbar-default">
     <div class="container-fluid">
         <div class="navbar-header">
@@ -34,8 +24,10 @@
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
                 <li class="{% if nav_active=='home'%}active{%endif%}"><a href="/home">Home</a></li>
+                {% if authenticated %}
                 <li class="{% if nav_active=='friends'%}active{%endif%}"><a href="/friends">Friends</a></li>
                 <li class="{% if nav_active=='favorites'%}active{%endif%}"><a href="/favorites">Favorites</a></li>
+                {%endif%}
                 <li class="{% if nav_active=='about'%}active{%endif%}"><a href="/about">About</a></li>
             </ul>
             {% if authenticated %}
@@ -53,17 +45,17 @@
             <ul class="nav navbar-nav navbar-right">
                 {% if not authenticated %}
                 <li class="{% if nav_active=='register'%}active{%endif%}">
-                	<a href="/register"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>
+                    <a href="/register"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>
                 <li class="{% if nav_active=='login'%}active{%endif%}">
-                	<a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+                    <a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
                 {% else %}
                 <li class="dropdown">
-                	<a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
                         {{fname}}
                 	<span class="caret"></span></a>
-                	<ul class="dropdown-menu">
-                		<li><a href="/logout">Logout</a></li>
-                	</ul>
+                    <ul class="dropdown-menu">
+                        <li><a href="/logout">Logout</a></li>
+                    </ul>
                 </li>
                 {%endif%}
             </ul>
@@ -72,15 +64,8 @@
     </div>
     <!-- /.container-fluid -->
 </nav>
-{% endblock %}
-
-{% block content %}
+{% endblock %} {% block content %}
 <div class="container">
     {% block page_content %}{% endblock %}
 </div>
-{% endblock %}
-
-{% block scripts %}
-{{ super() }}
-{% block bscripts %}{% endblock %}
-{% endblock %}
+{% endblock %} {% block scripts %} {{ super() }} {% block bscripts %}{% endblock %} {% endblock %}
