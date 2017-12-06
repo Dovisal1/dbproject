@@ -426,7 +426,7 @@ def fetch_friend_data(uname):
         groups = cursor.fetchall()
 
         q = """
-            SELECT first_name, last_name
+            SELECT username, first_name, last_name
             FROM Person NATURAL JOIN Member
             WHERE group_name = %s
             AND username_creator = %s
@@ -695,8 +695,10 @@ def memberdel():
             Share.username = Member.username_creator
                 AND Share.group_name = Member.group_name
             WHERE Member.username = %s
-            AND Member.group_name != %s
-            AND Member.username_creator != %s
+            AND (
+                Member.group_name != %s
+                OR Member.username_creator != %s
+            )
         )
         """
 
