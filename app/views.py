@@ -816,36 +816,6 @@ def share():
 
     return redirect(url_for('home'))
 
-#Searching
-@app.route('/search', methods=['GET', 'POST'])
-@login_required
-def search():
-    username = session['username']
-    cursor = conn.cursor()
-    searchQuery = request.form['query']
-
-    q =  'SELECT id, file_path, content_name, timest,\
-            username, first_name, last_name\
-          FROM Content NATURAL JOIN Person\
-          WHERE (username = %s\
-          OR public\
-          OR id in\
-            (SELECT id\
-             FROM Share JOIN Member ON\
-                Share.username = Member.username_creator\
-                AND Share.group_name = Member.group_name\
-             WHERE Member.username = %s))\
-          AND (\
-               content_name like "\%%s%"\
-            OR username like "\%%s%")\
-          ORDER BY timest DESC'
-    
-    with conn.cursor() as cursor:
-        cursor.execute(q, (searchQuery))
-        data = cursor.all()
-    return render_template("home.html", username=username, posts=data, fname=get_fname())
-
-
 @app.route('/favoriteAdd', methods=['POST'])
 @login_required
 def addFavorite():
