@@ -614,14 +614,20 @@ def groupadd():
     group_name = request.form['group_name']
     desc = request.form['description']
 
-    q = """
+    q1 = """
         INSERT INTO FriendGroup(group_name, username, description)
+        VALUES (%s, %s, %s)
+        """
+
+    q2 = """
+        INSERT INTO Member(username, group_name, username_creator)
         VALUES (%s, %s, %s)
         """
 
     try:
         with conn.cursor() as cursor:
-            cursor.execute(q, (group_name, uname, desc))
+            cursor.execute(q1, (group_name, uname, desc))
+            cursor.execute(q2, (uname, group_name, uname))
         conn.commit()
     except pymysql.err.IntegrityError:
         m = """
@@ -720,6 +726,11 @@ def memberdel():
     if not member or not group:
         abort(403)
 
+    if member == uname:
+        m = "You cannot delete yourself from your own group."
+        flash(m, "danger")
+        return redirect(url_for('friends'))
+
     # check which tags need to be deleted
 
     # Get all Tags that are on items shared by this group
@@ -778,6 +789,10 @@ def memberdel():
             cursor.execute(q3, (member, group, uname))
 
         conn.commit()
+        m = """
+            You have defriended {}
+            """.format(member)
+        flash(m, "success")
     except Exception as e:
         conn.rollback()
         flash(str(e), "danger")

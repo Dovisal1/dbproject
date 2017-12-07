@@ -113,6 +113,7 @@ Friends
 				{% for m in group.members %}
 					<li style="padding-bottom: 3pt;">
 						{{m.first_name}} {{m.last_name}}
+						{% if m.username != session['username'] %}
 						<div class="pull-right">
 							<a
 							href="/memberdel?member={{m.username}}&group={{group.group_name}}"
@@ -121,6 +122,7 @@ Friends
 								&times;
 							</a>
 						</div>
+						{% endif %}
 					</li>
 				{% endfor %}
 				</ul>
