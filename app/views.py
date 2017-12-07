@@ -84,7 +84,7 @@ def loginAuth():
     hash = hashlib.md5(password.encode('utf-8')).hexdigest()
 
     q = """
-        SELECT *
+        SELECT first_name
         FROM Person
         WHERE username = %s
         AND password = %s
@@ -99,6 +99,7 @@ def loginAuth():
         #creates a session for the the user
         #session is a built in
         session['username'] = username
+        session['first_name'] = data['first_name']
         return redirect(url_for('home'))
     else:
         #returns an error message to the html page
@@ -247,6 +248,12 @@ def home():
             ORDER BY timest DESC
             """
 
+        q3 = """
+            SELECT group_name
+            FROM Share
+            WHERE id = %s
+            """
+
         for p in posts:
             cursor.execute(q1, (p['id']))
             p['comments'] = cursor.fetchall()
@@ -254,7 +261,25 @@ def home():
             cursor.execute(q2, (p['id']))
             p['tags'] = cursor.fetchall()
 
-    return render_template('home.html', search=searchQuery, username=uname, posts=posts, favorites=favoriteIDs, fname=get_fname())
+            cursor.execute(q3, (p['id']))
+            p['groups'] = cursor.fetchall()
+
+        q = """
+            SELECT group_name
+            FROM FriendGroup
+            WHERE username = %s
+            """
+        cursor.execute(q, (uname))
+        groups = cursor.fetchall()
+
+    return render_template('home.html',
+        search=searchQuery,
+        username=uname,
+        posts=posts,
+        favorites=favoriteIDs,
+        fname=get_fname(),
+        groups=groups
+        )
 
 
 #Logging out
@@ -803,12 +828,8 @@ def memberdel():
 @login_required
 def share():
     uname = session['username']
-    group = request.form['group_name']
-    owner = request.form['owner']
+    group = request.form['group_name'] 
     id = request.form['id']
-
-    if owner == "":
-        owner = uname
 
     q = """
         INSERT INTO Share(id, group_name, username)
@@ -817,7 +838,7 @@ def share():
 
     try:
         with conn.cursor() as cursor:
-            cursor.execute(q, (id, group, owner))
+            cursor.execute(q, (id, group, uname))
         conn.commit()
         m = """
             Item successfully shared.
