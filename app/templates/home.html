@@ -89,6 +89,7 @@
                     </div>
                 </div>
             </form>
+            {% if username == line.username %}
             <hr>
             <form class="form-inline" style="padding-top:10px;padding-bottom:0pt;" action="/share" method="POST">
                 <div class="form-group">
@@ -104,6 +105,7 @@
 					</button>
                 </div>
             </form>
+            {% endif %}
             <hr> {% if line.id not in favorites %}
             <form class="form-inline" action="/favoriteAdd" method="POST">
                 {% else %}
