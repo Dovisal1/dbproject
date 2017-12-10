@@ -14,7 +14,7 @@ except:
         DBUSER = 'root',
         DBPASS = 'root',
         DBNAME = 'pricosha',
-        PHOTO_DIRECTORY = os.path.join(os.getcwd(), 'photos')
+        PHOTO_DIRECTORY = os.path.join(os.getcwd(), 'app', 'photos')
     )
 
 if not 'PHOTO_DIRECTORY' in app.config:

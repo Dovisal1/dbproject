@@ -1,4 +1,4 @@
-CREATE TABLE Person(
+CREATE TABLE IF NOT EXISTS Person(
 	username VARCHAR (50),
 	password VARCHAR (50),
 	first_name VARCHAR (50),
@@ -6,7 +6,7 @@ CREATE TABLE Person(
 	PRIMARY KEY (username)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-CREATE TABLE Content(
+CREATE TABLE IF NOT EXISTS Content(
 	id INT AUTO_INCREMENT,
 	username VARCHAR (50),
 	timest TIMESTAMP,
@@ -17,7 +17,7 @@ CREATE TABLE Content(
 	FOREIGN KEY (username) REFERENCES Person (username)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-CREATE TABLE Tag(
+CREATE TABLE IF NOT EXISTS Tag(
 	id INT,
 	username_tagger VARCHAR (50),
 	username_taggee VARCHAR (50),
@@ -29,7 +29,7 @@ CREATE TABLE Tag(
 	FOREIGN KEY (username_taggee) REFERENCES Person(username)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-CREATE TABLE Comment(
+CREATE TABLE IF NOT EXISTS Comment(
 	id INT,
 	username VARCHAR (50),
 	timest TIMESTAMP,
@@ -40,7 +40,7 @@ CREATE TABLE Comment(
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
-CREATE TABLE FriendGroup(
+CREATE TABLE IF NOT EXISTS FriendGroup(
 	group_name VARCHAR (50),
 	username VARCHAR (50),
 	description VARCHAR (50),
@@ -48,7 +48,7 @@ CREATE TABLE FriendGroup(
 	FOREIGN KEY (username) REFERENCES Person(username)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-CREATE TABLE Member(
+CREATE TABLE IF NOT EXISTS Member(
 	username VARCHAR (50),
 	group_name VARCHAR (50),
 	username_creator VARCHAR (50),
@@ -57,7 +57,7 @@ CREATE TABLE Member(
 	FOREIGN KEY (group_name, username_creator) REFERENCES FriendGroup(group_name, username)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-CREATE TABLE Share(
+CREATE TABLE IF NOT EXISTS Share(
 	id INT,
 group_name VARCHAR (50),	
 username VARCHAR (50),
@@ -66,7 +66,7 @@ FOREIGN KEY (id) REFERENCES Content(id),
 FOREIGN KEY (group_name, username) REFERENCES FriendGroup(group_name, username)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-CREATE TABLE Favorite(
+CREATE TABLE IF NOT EXISTS Favorite(
 	id INT,
 	username VARCHAR(50),
 	PRIMARY KEY(id, username),
