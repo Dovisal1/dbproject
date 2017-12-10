@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_bootstrap import Bootstrap
+import os
 
 app = Flask(__name__)
 Bootstrap(app)
@@ -13,7 +14,12 @@ except:
         DBUSER = 'root',
         DBPASS = 'root',
         DBNAME = 'pricosha',
-        PHOTO_DIRECTORY = ''
+        PHOTO_DIRECTORY = os.path.join(os.getcwd(), 'photos')
+    )
+
+if not 'PHOTO_DIRECTORY' in app.config:
+    app.config.update(
+        PHOTO_DIRECTORY = os.path.join(os.getcwd(), 'app', 'photos')
     )
 
 app.jinja_env.auto_reload = True
