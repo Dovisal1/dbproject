@@ -832,6 +832,22 @@ def share():
     id = request.form['id']
 
     q = """
+        SELECT username
+        FROM Content
+        WHERE id = %s
+        """
+
+    with conn.cursor() as cursor:
+        cursor.execute(q, (id))
+        data = cursor.fetchone()
+
+    if not data:
+        abort(403)
+    elif data['username'] != uname:
+        flash("You cannot share other users content.", "danger")
+        return redirect(url_for('home'))
+
+    q = """
         INSERT INTO Share(id, group_name, username)
         VALUES (%s, %s, %s)
         """
