@@ -193,6 +193,7 @@ def home():
                 """
             cursor.execute(q, (uname, uname))
         else:
+            modifiedSearchQuery = '%' + searchQuery + '%'
             q = """
                 SELECT id, file_path, content_name, timest,
                     username, first_name, last_name
@@ -214,7 +215,7 @@ def home():
                     )
                 ORDER BY timest DESC
                 """
-            cursor.execute(q, (uname, uname, searchQuery, searchQuery))
+            cursor.execute(q, (uname, uname, modifiedSearchQuery, modifiedSearchQuery))
 
         posts = cursor.fetchall()
 
