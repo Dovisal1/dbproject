@@ -69,6 +69,12 @@ def login():
 def register():
     return render_template("register.html", title='Register')
 
+#Routes Settings Page
+@app.route('/settings')
+@app.route('/settings/')
+def settings():
+    return render_template("settings.html", title='Settings', fname=get_fname())
+
 #Authenticates the login
 @app.route('/loginAuth', methods=['GET', 'POST'])
 def loginAuth():
@@ -78,7 +84,7 @@ def loginAuth():
     hash = hashlib.md5(password.encode('utf-8')).hexdigest()
 
     q = """
-        SELECT *
+        SELECT first_name
         FROM Person
         WHERE username = %s
         AND password = %s
@@ -93,6 +99,7 @@ def loginAuth():
         #creates a session for the the user
         #session is a built in
         session['username'] = username
+        session['first_name'] = data['first_name']
         return redirect(url_for('home'))
     else:
         #returns an error message to the html page
@@ -129,6 +136,36 @@ def registerAuth():
         return render_template('register.html', error=error)
     
     session['username'] = username
+    return redirect(url_for('home'))
+
+#Authenticates the register
+
+
+@app.route('/changeAccountInfo', methods=['GET', 'POST'])
+def changeAccountInfo():
+    uname = session['username']
+    #grabs information from the forms
+    fname = request.form['fname']
+    lname = request.form['lname']
+    password = request.form['password']
+    passconf = request.form['pass-conf']
+
+    if password != passconf:
+        error = "Passwords do not match."
+        return render_template('settings.html', error=error)
+
+    hash = hashlib.md5(password.encode('utf-8')).hexdigest()
+
+    q = """
+        UPDATE Person
+        SET first_name = %s, last_name = %s, password = %s
+        WHERE username = %s
+        """
+
+    with conn.cursor() as cursor:
+        cursor.execute(q, (fname, lname, hash, uname))
+        conn.commit()
+
     return redirect(url_for('home'))
 
 @app.route('/home')
@@ -181,6 +218,21 @@ def home():
 
         posts = cursor.fetchall()
 
+        if searchQuery and len(posts) == 0:
+            e = "No results found!"
+            flash(e, "danger")
+
+        q1 = """
+                SELECT id FROM Favorite
+                WHERE username = %s
+                """
+
+        cursor.execute(q1, (uname))
+        favorites = cursor.fetchall()
+        favoriteIDs = []
+        for favorite in favorites:
+            favoriteIDs.append(favorite['id'])
+
         q1 = """
             SELECT username, first_name, last_name, timest, comment_text
             FROM Comment NATURAL JOIN Person
@@ -196,6 +248,12 @@ def home():
             ORDER BY timest DESC
             """
 
+        q3 = """
+            SELECT group_name
+            FROM Share
+            WHERE id = %s
+            """
+
         for p in posts:
             cursor.execute(q1, (p['id']))
             p['comments'] = cursor.fetchall()
@@ -203,7 +261,25 @@ def home():
             cursor.execute(q2, (p['id']))
             p['tags'] = cursor.fetchall()
 
-    return render_template('home.html', username=uname, posts=posts, fname=get_fname())
+            cursor.execute(q3, (p['id']))
+            p['groups'] = cursor.fetchall()
+
+        q = """
+            SELECT group_name
+            FROM FriendGroup
+            WHERE username = %s
+            """
+        cursor.execute(q, (uname))
+        groups = cursor.fetchall()
+
+    return render_template('home.html',
+        search=searchQuery,
+        username=uname,
+        posts=posts,
+        favorites=favoriteIDs,
+        fname=get_fname(),
+        groups=groups
+        )
 
 
 #Logging out
@@ -563,14 +639,20 @@ def groupadd():
     group_name = request.form['group_name']
     desc = request.form['description']
 
-    q = """
+    q1 = """
         INSERT INTO FriendGroup(group_name, username, description)
+        VALUES (%s, %s, %s)
+        """
+
+    q2 = """
+        INSERT INTO Member(username, group_name, username_creator)
         VALUES (%s, %s, %s)
         """
 
     try:
         with conn.cursor() as cursor:
-            cursor.execute(q, (group_name, uname, desc))
+            cursor.execute(q1, (group_name, uname, desc))
+            cursor.execute(q2, (uname, group_name, uname))
         conn.commit()
     except pymysql.err.IntegrityError:
         m = """
@@ -669,6 +751,11 @@ def memberdel():
     if not member or not group:
         abort(403)
 
+    if member == uname:
+        m = "You cannot delete yourself from your own group."
+        flash(m, "danger")
+        return redirect(url_for('friends'))
+
     # check which tags need to be deleted
 
     # Get all Tags that are on items shared by this group
@@ -727,6 +814,10 @@ def memberdel():
             cursor.execute(q3, (member, group, uname))
 
         conn.commit()
+        m = """
+            You have defriended {}
+            """.format(member)
+        flash(m, "success")
     except Exception as e:
         conn.rollback()
         flash(str(e), "danger")
@@ -737,12 +828,24 @@ def memberdel():
 @login_required
 def share():
     uname = session['username']
-    group = request.form['group_name']
-    owner = request.form['owner']
+    group = request.form['group_name'] 
     id = request.form['id']
 
-    if owner == "":
-        owner = uname
+    q = """
+        SELECT username
+        FROM Content
+        WHERE id = %s
+        """
+
+    with conn.cursor() as cursor:
+        cursor.execute(q, (id))
+        data = cursor.fetchone()
+
+    if not data:
+        abort(403)
+    elif data['username'] != uname:
+        flash("You cannot share other users content.", "danger")
+        return redirect(url_for('home'))
 
     q = """
         INSERT INTO Share(id, group_name, username)
@@ -751,7 +854,7 @@ def share():
 
     try:
         with conn.cursor() as cursor:
-            cursor.execute(q, (id, group, owner))
+            cursor.execute(q, (id, group, uname))
         conn.commit()
         m = """
             Item successfully shared.
@@ -764,36 +867,6 @@ def share():
         flash(m, "warning")
 
     return redirect(url_for('home'))
-
-#Searching
-@app.route('/search', methods=['GET', 'POST'])
-@login_required
-def search():
-    username = session['username']
-    cursor = conn.cursor()
-    searchQuery = request.form['query']
-
-    q =  'SELECT id, file_path, content_name, timest,\
-            username, first_name, last_name\
-          FROM Content NATURAL JOIN Person\
-          WHERE (username = %s\
-          OR public\
-          OR id in\
-            (SELECT id\
-             FROM Share JOIN Member ON\
-                Share.username = Member.username_creator\
-                AND Share.group_name = Member.group_name\
-             WHERE Member.username = %s))\
-          AND (\
-               content_name like "\%%s%"\
-            OR username like "\%%s%")\
-          ORDER BY timest DESC'
-    
-    with conn.cursor() as cursor:
-        cursor.execute(q, (searchQuery))
-        data = cursor.all()
-    return render_template("home.html", username=username, posts=data, fname=get_fname())
-
 
 @app.route('/favoriteAdd', methods=['POST'])
 @login_required
@@ -811,7 +884,26 @@ def addFavorite():
 
     conn.commit()
     return redirect(url_for('home'))
-  
+
+
+@app.route('/favoriteDel', methods=['POST'])
+@login_required
+def deleteFavorite():
+    uname = session['username']
+    id = request.form['id']
+
+    q = """
+        DELETE FROM Favorite
+        WHERE id = %s
+        AND username = %s
+        """
+    
+    with conn.cursor() as cursor:
+        cursor.execute(q, (id, uname))
+    
+    conn.commit()
+    return redirect(url_for('home'))
+
 #Favorites
 @app.route('/favorites')
 @login_required
@@ -838,6 +930,9 @@ def favorites():
     Tag.username_taggee = Person.username\
     WHERE id = %s AND status = true\
     ORDER BY timest DESC'
+
+    if len(data) == 0:
+        flash("You have not saved any posts yet!", "warning")
     
     for d in data:
         with conn.cursor() as cursor:
@@ -846,6 +941,5 @@ def favorites():
         with conn.cursor() as cursor:
             cursor.execute(q3, (d["id"]))
             d['tags'] = cursor.fetchall()
-
     return render_template("favorites.html", username=username, posts=data, fname=get_fname())
 
