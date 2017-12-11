@@ -930,6 +930,9 @@ def favorites():
     Tag.username_taggee = Person.username\
     WHERE id = %s AND status = true\
     ORDER BY timest DESC'
+
+    if len(data) == 0:
+        flash("You have not saved any posts yet!", "warning")
     
     for d in data:
         with conn.cursor() as cursor:
