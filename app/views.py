@@ -577,9 +577,15 @@ def tag():
                 conn.commit()
             except pymysql.err.IntegrityError:
                 e = """
-                Not a valid tag. {} cannot view that item.
+                {} is already tagged.
                 """.format(taggee)
                 flash(e, "danger")
+        else:
+            e = """
+                Not a valid tag. {} cannot view that item.
+                """.format(taggee)
+            flash(e, "danger")
+
 
     return redirect(url_for('home'))
 
