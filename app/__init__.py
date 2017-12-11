@@ -8,10 +8,10 @@ try:
     app.config.from_object('config')
 except:
     app.config.update(
-        SECRET_KEY = 'fnskjdn',
-        DBHOST = 'dovi.ddns.net',
-        DBUSER = 'root',
-        DBPASS = 'root',
+        SECRET_KEY = 'secret_key',
+        DBHOST = 'localhost',
+        DBUSER = 'pricosha',
+        DBPASS = 'cs3083',
         DBNAME = 'pricosha',
         PHOTO_DIRECTORY = ''
     )
