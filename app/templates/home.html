@@ -93,10 +93,12 @@
             <hr>
             <form class="form-inline" style="padding-top:10px;padding-bottom:0pt;" action="/share" method="POST">
                 <div class="form-group">
-                    <select class="form-control" name="group_name" required>
+                    <select class="form-control" name="group_info" required>
                         <option value="" disabled selected hidden>Group</option>
                         {% for group in groups %}
-                        <option>{{group.group_name}}</option>
+                        <option value="{{group.group_name}}^^^{{group.username_creator}}">
+                            {{group.username_creator}} => {{group.group_name}}
+                        </option>
                         {% endfor %}
                     </select>
                     <input type="hidden" class="form-control" name="id" value="{{line.id}}" />

@@ -265,8 +265,8 @@ def home():
             p['groups'] = cursor.fetchall()
 
         q = """
-            SELECT group_name
-            FROM FriendGroup
+            SELECT username_creator, group_name
+            FROM Member
             WHERE username = %s
             """
         cursor.execute(q, (uname))
@@ -834,7 +834,8 @@ def memberdel():
 @login_required
 def share():
     uname = session['username']
-    group = request.form['group_name'] 
+    groupinfo = request.form['group_info']
+    group, creator = groupinfo.split("^^^")
     id = request.form['id']
 
     q = """
@@ -860,7 +861,7 @@ def share():
 
     try:
         with conn.cursor() as cursor:
-            cursor.execute(q, (id, group, uname))
+            cursor.execute(q, (id, group, creator))
         conn.commit()
         m = """
             Item successfully shared.
