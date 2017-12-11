@@ -931,6 +931,17 @@ def favorites():
     WHERE id = %s AND status = true\
     ORDER BY timest DESC'
 
+    q = """
+            SELECT group_name
+            FROM FriendGroup
+            WHERE username = %s
+            """
+
+    groups = None
+    with conn.cursor() as cursor:
+        cursor.execute(q, (username))
+        groups = cursor.fetchall()
+
     if len(data) == 0:
         flash("You have not saved any posts yet!", "warning")
     
@@ -941,5 +952,5 @@ def favorites():
         with conn.cursor() as cursor:
             cursor.execute(q3, (d["id"]))
             d['tags'] = cursor.fetchall()
-    return render_template("favorites.html", username=username, posts=data, fname=get_fname())
+    return render_template("favorites.html", username=username, posts=data, fname=get_fname(), groups=groups)
 
