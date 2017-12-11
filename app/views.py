@@ -571,15 +571,15 @@ def tag():
             res = cursor.fetchone()
 
         if res:
-            with conn.cursor() as cursor:
-                cursor.execute(q, (uname, taggee, id, 0))
-            conn.commit()
-        else:
-            e = """
+            try:
+                with conn.cursor() as cursor:
+                    cursor.execute(q, (uname, taggee, id, 0))
+                conn.commit()
+            except pymysql.err.IntegrityError:
+                e = """
                 Not a valid tag. {} cannot view that item.
                 """.format(taggee)
-            flash(e, "danger")
-
+                flash(e, "danger")
 
     return redirect(url_for('home'))
 

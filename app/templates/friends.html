@@ -44,7 +44,7 @@ Friends
 		</h4>
 		<form class="form" style="padding-bottom:0pt;" action="/groupadd" method="POST">
 			<div class="form-group">
-				<input type="text" class="form-control" name="group_name" placeholder="Group name"/>
+				<input type="text" class="form-control" name="group_name" placeholder="Group name" required/>
 			</div>
 			<div class="form-group">
 				<textarea class="form-control" rows="3"
@@ -60,7 +60,7 @@ Friends
 		<h4>Add a member</h4>
 		<form class="form" action="/memberadd{%if duplicate_name_error %}u{%endif%}" method="POST">
 			<div class="form-group">
-				<select class="form-control" name="group_name">
+				<select class="form-control" name="group_name" required>
 					<option value="" disabled selected hidden>Group</option>
 					{% for group in groups %}
 					<option>{{group.group_name}}</option>
